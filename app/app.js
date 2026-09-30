@@ -1,699 +1,826 @@
-// ============================================================
-// SOLARFORGE
-// Main Application Controller
-// ============================================================
-//
-// This module connects the major SolarForge foundations:
-//
-// - Project Data Model
-// - Offline Storage
-//
-// It manages the currently active project and provides a
-// simple application-level API for future SolarForge screens.
-//
-// Future modules will use this controller for:
-//
-// - Home
-// - New Project
-// - Load Project
-// - Energy Analysis
-// - Preliminary Calculation
-// - Equipment
-// - Engineering Checks
-// - Wiring Designer
-// - BOM
-// - Costing
-// - Quotation
-// - Installation
-// - Commissioning
-// - Reports
-//
-// ============================================================
+/* =========================================================
+   SOLARFORGE APPLICATION CONTROLLER
+   ========================================================= */
+
+(function () {
+
+    "use strict";
 
 
-const SolarForgeApp = {
+    /* =====================================================
+       APPLICATION
+    ====================================================== */
 
-    // --------------------------------------------------------
-    // Application information
-    // --------------------------------------------------------
-
-    name: "SolarForge",
-
-    version: "1.0.0",
-
-    currentProject: null,
-
-    initialized: false,
+    const SolarForgeApp = {
 
 
-    // --------------------------------------------------------
-    // Initialize SolarForge
-    // --------------------------------------------------------
+        name:
+            "SolarForge",
 
-    async init() {
+        version:
+            "1.0.0",
 
-        if (this.initialized) {
+        currentProject:
+            null,
 
-            return this;
-        }
+        initialized:
+            false,
 
 
-        // --------------------------------------------
-        // Check required modules
-        // --------------------------------------------
+        /* =================================================
+           INITIALIZE APPLICATION
+        ================================================== */
 
-        if (
-            !window.SolarForgeProject
-        ) {
+        init: async function () {
 
-            throw new Error(
-                "SolarForgeProject is not available. " +
-                "Make sure app/project.js is loaded first."
+            console.log(
+                "Starting SolarForge..."
             );
-        }
 
 
-        if (
-            !window.SolarForgeStorage
-        ) {
+            /*
+             * project.js must already be available.
+             */
 
-            throw new Error(
-                "SolarForgeStorage is not available. " +
-                "Make sure app/storage.js is loaded first."
+            if (
+                !window.SolarForgeProject
+            ) {
+
+                throw new Error(
+                    "SolarForgeProject is not available. " +
+                    "Make sure app/project.js is loaded before app.js."
+                );
+
+            }
+
+
+            /*
+             * storage.js must already be available.
+             */
+
+            if (
+                !window.SolarForgeStorage
+            ) {
+
+                throw new Error(
+                    "SolarForgeStorage is not available. " +
+                    "Make sure app/storage.js is loaded before app.js."
+                );
+
+            }
+
+
+            /*
+             * Initialize IndexedDB.
+             */
+
+            await window.SolarForgeStorage.init();
+
+
+            /*
+             * Try to restore the latest project.
+             */
+
+            try {
+
+                const latest =
+                    await window.SolarForgeStorage.getLatestProject();
+
+
+                if (latest) {
+
+                    this.currentProject =
+                        latest;
+
+                    console.log(
+                        "Latest project restored:",
+                        latest.project?.name
+                    );
+
+                }
+
+            } catch (error) {
+
+                console.warn(
+                    "No previous project could be restored.",
+                    error
+                );
+
+            }
+
+
+            this.initialized =
+                true;
+
+
+            console.log(
+                "SolarForge initialized successfully."
             );
-        }
 
 
-        // --------------------------------------------
-        // Initialize offline database
-        // --------------------------------------------
+            return true;
 
-        await SolarForgeStorage.init();
+        },
 
 
-        // --------------------------------------------
-        // Try to restore the most recently used project
-        // --------------------------------------------
+        /* =================================================
+           ENSURE INITIALIZED
+        ================================================== */
 
-        const latestProject =
-            await SolarForgeStorage.getLatestProject();
+        ensureInitialized: function () {
+
+            if (!this.initialized) {
+
+                throw new Error(
+                    "SolarForge has not been initialized."
+                );
+
+            }
+
+        },
 
 
-        if (latestProject) {
+        /* =================================================
+           CREATE NEW PROJECT
+        ================================================== */
+
+        createNewProject: async function () {
+
+            this.ensureInitialized();
+
+
+            const project =
+                await window.SolarForgeStorage.createProject();
+
 
             this.currentProject =
-                latestProject;
-        }
+                project;
 
 
-        this.initialized = true;
+            return project;
 
+        },
 
-        return this;
-    },
 
+        /* =================================================
+           LOAD PROJECT
+        ================================================== */
 
-    // --------------------------------------------------------
-    // Create a new SolarForge project
-    // --------------------------------------------------------
-
-    async createNewProject() {
-
-        await this.ensureInitialized();
-
-
-        const project =
-            SolarForgeProject.createNewProject();
-
-
-        await SolarForgeStorage.saveProject(
-            project
-        );
-
-
-        this.currentProject =
-            project;
-
-
-        return project;
-    },
-
-
-    // --------------------------------------------------------
-    // Load a project
-    // --------------------------------------------------------
-
-    async loadProject(projectId) {
-
-        await this.ensureInitialized();
-
-
-        if (!projectId) {
-
-            throw new Error(
-                "Project ID is required."
-            );
-        }
-
-
-        const project =
-            await SolarForgeStorage.loadProject(
-                projectId
-            );
-
-
-        if (!project) {
-
-            throw new Error(
-                "SolarForge project was not found."
-            );
-        }
-
-
-        this.currentProject =
-            project;
-
-
-        return project;
-    },
-
-
-    // --------------------------------------------------------
-    // Save the current project
-    // --------------------------------------------------------
-
-    async saveCurrentProject() {
-
-        await this.ensureInitialized();
-
-
-        if (!this.currentProject) {
-
-            throw new Error(
-                "There is no active SolarForge project."
-            );
-        }
-
-
-        SolarForgeProject.touch(
-            this.currentProject
-        );
-
-
-        await SolarForgeStorage.saveProject(
-            this.currentProject
-        );
-
-
-        return this.currentProject;
-    },
-
-
-    // --------------------------------------------------------
-    // Save a specific project
-    // --------------------------------------------------------
-
-    async saveProject(project) {
-
-        await this.ensureInitialized();
-
-
-        if (!project) {
-
-            throw new Error(
-                "Cannot save an empty SolarForge project."
-            );
-        }
-
-
-        await SolarForgeStorage.saveProject(
-            project
-        );
-
-
-        this.currentProject =
-            project;
-
-
-        return project;
-    },
-
-
-    // --------------------------------------------------------
-    // Delete the current project
-    // --------------------------------------------------------
-
-    async deleteCurrentProject() {
-
-        await this.ensureInitialized();
-
-
-        if (!this.currentProject) {
-
-            throw new Error(
-                "There is no active SolarForge project."
-            );
-        }
-
-
-        const projectId =
-            this.currentProject.project.id;
-
-
-        await SolarForgeStorage.deleteProject(
+        loadProject: async function (
             projectId
-        );
-
-
-        this.currentProject =
-            null;
-
-
-        return true;
-    },
-
-
-    // --------------------------------------------------------
-    // Delete a project by ID
-    // --------------------------------------------------------
-
-    async deleteProject(projectId) {
-
-        await this.ensureInitialized();
-
-
-        if (!projectId) {
-
-            throw new Error(
-                "Project ID is required."
-            );
-        }
-
-
-        await SolarForgeStorage.deleteProject(
-            projectId
-        );
-
-
-        if (
-            this.currentProject &&
-            this.currentProject.project &&
-            this.currentProject.project.id === projectId
         ) {
 
+            this.ensureInitialized();
+
+
+            if (!projectId) {
+
+                throw new Error(
+                    "Project ID is required."
+                );
+
+            }
+
+
+            const project =
+                await window.SolarForgeStorage.loadProject(
+                    projectId
+                );
+
+
+            if (!project) {
+
+                throw new Error(
+                    "Project could not be found."
+                );
+
+            }
+
+
             this.currentProject =
-                null;
-        }
+                project;
 
 
-        return true;
-    },
+            return project;
 
+        },
 
-    // --------------------------------------------------------
-    // Get all projects
-    // --------------------------------------------------------
 
-    async getProjects() {
+        /* =================================================
+           SAVE CURRENT PROJECT
+        ================================================== */
 
-        await this.ensureInitialized();
+        saveCurrentProject: async function () {
 
+            this.ensureInitialized();
 
-        return SolarForgeStorage.getAllProjects();
-    },
 
+            if (!this.currentProject) {
 
-    // --------------------------------------------------------
-    // Get project count
-    // --------------------------------------------------------
+                throw new Error(
+                    "There is no active project."
+                );
 
-    async getProjectCount() {
+            }
 
-        await this.ensureInitialized();
 
-
-        return SolarForgeStorage.countProjects();
-    },
-
-
-    // --------------------------------------------------------
-    // Get the current project
-    // --------------------------------------------------------
-
-    getCurrentProject() {
-
-        return this.currentProject;
-    },
-
-
-    // --------------------------------------------------------
-    // Check whether a project is currently open
-    // --------------------------------------------------------
-
-    hasCurrentProject() {
-
-        return Boolean(
-            this.currentProject
-        );
-    },
-
-
-    // --------------------------------------------------------
-    // Replace the current project
-    // --------------------------------------------------------
-
-    setCurrentProject(project) {
-
-        if (!project) {
-
-            throw new Error(
-                "Cannot set an empty SolarForge project."
-            );
-        }
-
-
-        const validation =
-            SolarForgeProject.validate(
-                project
-            );
-
-
-        if (!validation.valid) {
-
-            throw new Error(
-                "Invalid SolarForge project: " +
-                validation.errors.join(" ")
-            );
-        }
-
-
-        this.currentProject =
-            project;
-
-
-        return this.currentProject;
-    },
-
-
-    // --------------------------------------------------------
-    // Close the current project
-    // --------------------------------------------------------
-    //
-    // This does NOT delete the project.
-    //
-    // It only removes it from the active application state.
-    //
-    // --------------------------------------------------------
-
-    closeCurrentProject() {
-
-        this.currentProject =
-            null;
-
-        return true;
-    },
-
-
-    // --------------------------------------------------------
-    // Add an appliance to the current project
-    // --------------------------------------------------------
-
-    addAppliance(appliance = {}) {
-
-        this.requireCurrentProject();
-
-
-        const newAppliance =
-            SolarForgeProject.addAppliance(
-                this.currentProject,
-                appliance
-            );
-
-
-        return newAppliance;
-    },
-
-
-    // --------------------------------------------------------
-    // Remove an appliance
-    // --------------------------------------------------------
-
-    removeAppliance(applianceId) {
-
-        this.requireCurrentProject();
-
-
-        SolarForgeProject.removeAppliance(
-            this.currentProject,
-            applianceId
-        );
-    },
-
-
-    // --------------------------------------------------------
-    // Add equipment
-    // --------------------------------------------------------
-
-    addEquipment(
-        category,
-        equipment = {}
-    ) {
-
-        this.requireCurrentProject();
-
-
-        return SolarForgeProject.addEquipment(
-            this.currentProject,
-            category,
-            equipment
-        );
-    },
-
-
-    // --------------------------------------------------------
-    // Remove equipment
-    // --------------------------------------------------------
-
-    removeEquipment(
-        category,
-        equipmentId
-    ) {
-
-        this.requireCurrentProject();
-
-
-        SolarForgeProject.removeEquipment(
-            this.currentProject,
-            category,
-            equipmentId
-        );
-    },
-
-
-    // --------------------------------------------------------
-    // Add engineering check
-    // --------------------------------------------------------
-
-    addEngineeringCheck(check = {}) {
-
-        this.requireCurrentProject();
-
-
-        return SolarForgeProject.addEngineeringCheck(
-            this.currentProject,
-            check
-        );
-    },
-
-
-    // --------------------------------------------------------
-    // Add BOM item
-    // --------------------------------------------------------
-
-    addBomItem(item = {}) {
-
-        this.requireCurrentProject();
-
-
-        return SolarForgeProject.addBomItem(
-            this.currentProject,
-            item
-        );
-    },
-
-
-    // --------------------------------------------------------
-    // Export the current project
-    // --------------------------------------------------------
-
-    exportCurrentProject() {
-
-        this.requireCurrentProject();
-
-
-        return SolarForgeStorage.exportProject(
-            this.currentProject
-        );
-    },
-
-
-    // --------------------------------------------------------
-    // Import a project
-    // --------------------------------------------------------
-
-    importProject(jsonText) {
-
-        const project =
-            SolarForgeStorage.importProject(
-                jsonText
-            );
-
-
-        this.currentProject =
-            project;
-
-
-        return project;
-    },
-
-
-    // --------------------------------------------------------
-    // Import and save a project
-    // --------------------------------------------------------
-
-    async importAndSaveProject(jsonText) {
-
-        await this.ensureInitialized();
-
-
-        const project =
-            SolarForgeStorage.importProject(
-                jsonText
-            );
-
-
-        await SolarForgeStorage.saveProject(
-            project
-        );
-
-
-        this.currentProject =
-            project;
-
-
-        return project;
-    },
-
-
-    // --------------------------------------------------------
-    // Create a backup copy of the current project
-    // --------------------------------------------------------
-
-    createProjectBackup() {
-
-        this.requireCurrentProject();
-
-
-        const clonedProject =
-            SolarForgeProject.clone(
+            await window.SolarForgeStorage.saveProject(
                 this.currentProject
             );
 
 
-        return clonedProject;
-    },
+            return this.currentProject;
+
+        },
 
 
-    // --------------------------------------------------------
-    // Validate the current project
-    // --------------------------------------------------------
+        /* =================================================
+           SAVE SPECIFIC PROJECT
+        ================================================== */
 
-    validateCurrentProject() {
+        saveProject: async function (
+            project
+        ) {
 
-        this.requireCurrentProject();
-
-
-        return SolarForgeProject.validate(
-            this.currentProject
-        );
-    },
+            this.ensureInitialized();
 
 
-    // --------------------------------------------------------
-    // Get application status
-    // --------------------------------------------------------
-
-    async getStatus() {
-
-        await this.ensureInitialized();
+            const saved =
+                await window.SolarForgeStorage.saveProject(
+                    project
+                );
 
 
-        const projectCount =
-            await SolarForgeStorage.countProjects();
+            if (
+                this.currentProject &&
+                this.currentProject.project &&
+                project &&
+                project.project &&
+                this.currentProject.project.id ===
+                project.project.id
+            ) {
+
+                this.currentProject =
+                    saved;
+
+            }
 
 
-        return {
+            return saved;
 
-            name: this.name,
-
-            version: this.version,
-
-            initialized:
-                this.initialized,
-
-            offlineStorage:
-                Boolean(
-                    SolarForgeStorage.database
-                ),
-
-            projectOpen:
-                this.hasCurrentProject(),
-
-            currentProjectId:
-                this.currentProject?.project?.id ||
-                null,
-
-            projectCount:
-                projectCount
-        };
-    },
+        },
 
 
-    // --------------------------------------------------------
-    // Ensure application is initialized
-    // --------------------------------------------------------
+        /* =================================================
+           DELETE CURRENT PROJECT
+        ================================================== */
 
-    async ensureInitialized() {
+        deleteCurrentProject: async function () {
 
-        if (!this.initialized) {
-
-            await this.init();
-        }
-    },
+            this.ensureInitialized();
 
 
-    // --------------------------------------------------------
-    // Require an active project
-    // --------------------------------------------------------
+            if (!this.currentProject) {
 
-    requireCurrentProject() {
+                return false;
 
-        if (!this.currentProject) {
+            }
 
-            throw new Error(
-                "No SolarForge project is currently open."
+
+            const projectId =
+                this.currentProject.project.id;
+
+
+            await window.SolarForgeStorage.deleteProject(
+                projectId
             );
+
+
+            this.currentProject =
+                null;
+
+
+            return true;
+
+        },
+
+
+        /* =================================================
+           DELETE PROJECT
+        ================================================== */
+
+        deleteProject: async function (
+            projectId
+        ) {
+
+            this.ensureInitialized();
+
+
+            await window.SolarForgeStorage.deleteProject(
+                projectId
+            );
+
+
+            if (
+                this.currentProject &&
+                this.currentProject.project &&
+                this.currentProject.project.id ===
+                projectId
+            ) {
+
+                this.currentProject =
+                    null;
+
+            }
+
+
+            return true;
+
+        },
+
+
+        /* =================================================
+           GET PROJECTS
+        ================================================== */
+
+        getProjects: async function () {
+
+            this.ensureInitialized();
+
+
+            return (
+                await window.SolarForgeStorage.getAllProjects()
+            );
+
+        },
+
+
+        /* =================================================
+           GET PROJECT COUNT
+        ================================================== */
+
+        getProjectCount: async function () {
+
+            this.ensureInitialized();
+
+
+            return (
+                await window.SolarForgeStorage.countProjects()
+            );
+
+        },
+
+
+        /* =================================================
+           GET CURRENT PROJECT
+        ================================================== */
+
+        getCurrentProject: function () {
+
+            return this.currentProject;
+
+        },
+
+
+        /* =================================================
+           HAS CURRENT PROJECT
+        ================================================== */
+
+        hasCurrentProject: function () {
+
+            return Boolean(
+                this.currentProject
+            );
+
+        },
+
+
+        /* =================================================
+           SET CURRENT PROJECT
+        ================================================== */
+
+        setCurrentProject: function (
+            project
+        ) {
+
+            this.currentProject =
+                project ||
+                null;
+
+
+            return this.currentProject;
+
+        },
+
+
+        /* =================================================
+           CLOSE CURRENT PROJECT
+        ================================================== */
+
+        closeCurrentProject: function () {
+
+            this.currentProject =
+                null;
+
+
+            return true;
+
+        },
+
+
+        /* =================================================
+           ADD APPLIANCE
+        ================================================== */
+
+        addAppliance: async function (
+            applianceData
+        ) {
+
+            this.ensureInitialized();
+
+
+            if (!this.currentProject) {
+
+                throw new Error(
+                    "No active project."
+                );
+
+            }
+
+
+            const appliance =
+                window.SolarForgeProject.addAppliance(
+                    this.currentProject,
+                    applianceData
+                );
+
+
+            await this.saveCurrentProject();
+
+
+            return appliance;
+
+        },
+
+
+        /* =================================================
+           REMOVE APPLIANCE
+        ================================================== */
+
+        removeAppliance: async function (
+            applianceId
+        ) {
+
+            this.ensureInitialized();
+
+
+            if (!this.currentProject) {
+
+                throw new Error(
+                    "No active project."
+                );
+
+            }
+
+
+            const removed =
+                window.SolarForgeProject.removeAppliance(
+                    this.currentProject,
+                    applianceId
+                );
+
+
+            if (removed) {
+
+                await this.saveCurrentProject();
+
+            }
+
+
+            return removed;
+
+        },
+
+
+        /* =================================================
+           ADD EQUIPMENT
+        ================================================== */
+
+        addEquipment: async function (
+            category,
+            equipmentData
+        ) {
+
+            this.ensureInitialized();
+
+
+            if (!this.currentProject) {
+
+                throw new Error(
+                    "No active project."
+                );
+
+            }
+
+
+            const equipment =
+                window.SolarForgeProject.addEquipment(
+                    this.currentProject,
+                    category,
+                    equipmentData
+                );
+
+
+            await this.saveCurrentProject();
+
+
+            return equipment;
+
+        },
+
+
+        /* =================================================
+           REMOVE EQUIPMENT
+        ================================================== */
+
+        removeEquipment: async function (
+            category,
+            equipmentId
+        ) {
+
+            this.ensureInitialized();
+
+
+            if (!this.currentProject) {
+
+                throw new Error(
+                    "No active project."
+                );
+
+            }
+
+
+            const removed =
+                window.SolarForgeProject.removeEquipment(
+                    this.currentProject,
+                    category,
+                    equipmentId
+                );
+
+
+            if (removed) {
+
+                await this.saveCurrentProject();
+
+            }
+
+
+            return removed;
+
+        },
+
+
+        /* =================================================
+           ENGINEERING CHECK
+        ================================================== */
+
+        addEngineeringCheck: async function (
+            checkData
+        ) {
+
+            this.ensureInitialized();
+
+
+            if (!this.currentProject) {
+
+                throw new Error(
+                    "No active project."
+                );
+
+            }
+
+
+            const check =
+                window.SolarForgeProject.addEngineeringCheck(
+                    this.currentProject,
+                    checkData
+                );
+
+
+            await this.saveCurrentProject();
+
+
+            return check;
+
+        },
+
+
+        /* =================================================
+           BOM ITEM
+        ================================================== */
+
+        addBomItem: async function (
+            itemData
+        ) {
+
+            this.ensureInitialized();
+
+
+            if (!this.currentProject) {
+
+                throw new Error(
+                    "No active project."
+                );
+
+            }
+
+
+            const item =
+                window.SolarForgeProject.addBomItem(
+                    this.currentProject,
+                    itemData
+                );
+
+
+            await this.saveCurrentProject();
+
+
+            return item;
+
+        },
+
+
+        /* =================================================
+           EXPORT CURRENT PROJECT
+        ================================================== */
+
+        exportCurrentProject: function () {
+
+            this.ensureInitialized();
+
+
+            if (!this.currentProject) {
+
+                throw new Error(
+                    "No active project."
+                );
+
+            }
+
+
+            return window.SolarForgeStorage.exportProject(
+                this.currentProject
+            );
+
+        },
+
+
+        /* =================================================
+           IMPORT PROJECT
+        ================================================== */
+
+        importProject: function (
+            jsonText
+        ) {
+
+            this.ensureInitialized();
+
+
+            return window.SolarForgeStorage.importProject(
+                jsonText
+            );
+
+        },
+
+
+        /* =================================================
+           IMPORT AND SAVE
+        ================================================== */
+
+        importAndSaveProject: async function (
+            jsonText
+        ) {
+
+            this.ensureInitialized();
+
+
+            const project =
+                this.importProject(
+                    jsonText
+                );
+
+
+            await this.saveProject(
+                project
+            );
+
+
+            this.currentProject =
+                project;
+
+
+            return project;
+
+        },
+
+
+        /* =================================================
+           CREATE BACKUP
+        ================================================== */
+
+        createProjectBackup: function () {
+
+            return this.exportCurrentProject();
+
+        },
+
+
+        /* =================================================
+           VALIDATE CURRENT PROJECT
+        ================================================== */
+
+        validateCurrentProject: function () {
+
+            if (!this.currentProject) {
+
+                return {
+
+                    valid: false,
+
+                    errors: [
+                        "No active project."
+                    ]
+
+                };
+
+            }
+
+
+            return window.SolarForgeProject.validate(
+                this.currentProject
+            );
+
+        },
+
+
+        /* =================================================
+           STATUS
+        ================================================== */
+
+        getStatus: function () {
+
+            if (!this.currentProject) {
+
+                return "no_project";
+
+            }
+
+
+            return (
+                this.currentProject.project?.status ||
+                "unknown"
+            );
+
+        },
+
+
+        /* =================================================
+           REQUIRE CURRENT PROJECT
+        ================================================== */
+
+        requireCurrentProject: function () {
+
+            if (!this.currentProject) {
+
+                throw new Error(
+                    "No active SolarForge project."
+                );
+
+            }
+
+
+            return this.currentProject;
+
         }
 
-
-        return this.currentProject;
-    }
-};
+    };
 
 
-// ============================================================
-// Global reference
-// ============================================================
+    /* =====================================================
+       EXPOSE GLOBAL
+    ====================================================== */
 
-window.SolarForgeApp =
-    SolarForgeApp;
+    window.SolarForgeApp =
+        SolarForgeApp;
+
+
+    window.SolarForgeAppReady =
+        true;
+
+
+    console.log(
+        "SolarForgeApp loaded successfully."
+    );
+
+
+})();
