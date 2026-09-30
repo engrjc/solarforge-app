@@ -1,991 +1,1269 @@
-// ============================================================
-// SOLARFORGE
-// Project Data Model
-// ============================================================
-//
-// This file defines the structure of a SolarForge project.
-//
-// It is intentionally independent from the user interface.
-// Other SolarForge modules will use this project structure for:
-//
-// - Customer information
-// - Site information
-// - Energy analysis
-// - Appliance schedules
-// - Preliminary calculations
-// - Equipment selection
-// - Engineering verification
-// - Wiring design
-// - BOM
-// - Costing
-// - Installation
-// - Commissioning
-// - Reports
-//
-// ============================================================
+/* =========================================================
+   SOLARFORGE PROJECT DATA MODEL
+   ========================================================= */
 
-const SolarForgeProject = {
+(function () {
 
-    // --------------------------------------------------------
-    // Application information
-    // --------------------------------------------------------
+    "use strict";
 
-    schemaVersion: "1.0.0",
 
-    // --------------------------------------------------------
-    // Create a completely new project
-    // --------------------------------------------------------
+    /* =====================================================
+       CONSTANTS
+    ====================================================== */
 
-    createNewProject() {
+    const SCHEMA_VERSION = "1.0.0";
 
-        const now = new Date().toISOString();
 
-        return {
+    /* =====================================================
+       PROJECT MODEL
+    ====================================================== */
 
-            // =================================================
-            // PROJECT INFORMATION
-            // =================================================
+    const SolarForgeProject = {
 
-            project: {
 
-                id: this.generateProjectId(),
+        /* =================================================
+           CREATE NEW PROJECT
+        ================================================= */
 
-                projectNumber: "",
+        createNewProject: function () {
 
-                name: "",
+            const now = new Date().toISOString();
 
-                status: "new",
+            const projectId =
+                this.generateProjectId();
 
-                revision: 1,
 
-                createdAt: now,
+            const projectNumber =
+                this.generateProjectNumber();
 
-                updatedAt: now
-            },
-
-
-            // =================================================
-            // CUSTOMER INFORMATION
-            // =================================================
-
-            customer: {
-
-                name: "",
-
-                company: "",
-
-                contactNumber: "",
-
-                email: "",
-
-                address: "",
-
-                notes: ""
-            },
-
-
-            // =================================================
-            // SITE INFORMATION
-            // =================================================
-
-            site: {
-
-                address: "",
-
-                installationType: "",
-
-                roofType: "",
-
-                roofMaterial: "",
-
-                mountingType: "",
-
-                gridConnection: "",
-
-                servicePhase: "",
-
-                serviceVoltage: "",
-
-                frequencyHz: 60,
-
-                mainBreakerRatingA: null,
-
-                existingElectricalPanel: "",
-
-                backupLoadPanel: "",
-
-                siteNotes: ""
-            },
-
-
-            // =================================================
-            // ENERGY ANALYSIS
-            // =================================================
-
-            energy: {
-
-                // Customer's reported electricity consumption
-                monthlyConsumptionKwh: 0,
-
-                // Optional information from the electricity bill
-                monthlyBillPhp: 0,
-
-                electricityRatePhpPerKwh: 0,
-
-                // Appliance/load schedule
-                appliances: [],
-
-                // Calculated values will be stored here later
-                calculated: {
-
-                    dailyConsumptionKwh: 0,
-
-                    daytimeEnergyKwh: 0,
-
-                    nighttimeEnergyKwh: 0,
-
-                    continuousEnergyKwh: 0,
-
-                    essentialEnergyKwh: 0,
-
-                    estimatedPeakLoadKw: 0,
-
-                    estimatedNightPeakLoadKw: 0
-                },
-
-                // Comparison between utility consumption
-                // and appliance-based estimation
-                consumptionCrossCheck: {
-
-                    applianceEstimatedMonthlyKwh: 0,
-
-                    utilityReportedMonthlyKwh: 0,
-
-                    differenceKwh: 0,
-
-                    differencePercent: 0,
-
-                    status: "not_checked"
-                }
-            },
-
-
-            // =================================================
-            // PRELIMINARY DESIGN
-            // =================================================
-
-            preliminary: {
-
-                status: "not_started",
-
-                assumptions: {
-
-                    peakSunHoursPerDay: null,
-
-                    pvSystemEfficiencyPercent: null,
-
-                    inverterEfficiencyPercent: null,
-
-                    batteryEfficiencyPercent: null,
-
-                    batteryUsableDoDPercent: null,
-
-                    designReservePercent: null,
-
-                    backupHoursRequired: null
-                },
-
-                results: {
-
-                    estimatedPvCapacityKw: null,
-
-                    estimatedInverterCapacityKw: null,
-
-                    estimatedBatteryUsableKwh: null,
-
-                    estimatedBatteryNominalKwh: null,
-
-                    estimatedBackupEnergyKwh: null,
-
-                    estimatedPeakDemandKw: null
-                },
-
-                warnings: [],
-
-                notes: ""
-            },
-
-
-            // =================================================
-            // EQUIPMENT
-            // =================================================
-            //
-            // These are the actual equipment selected for
-            // the project.
-            //
-            // Each item can contain:
-            //
-            // - Category
-            // - Brand
-            // - Model
-            // - Quantity
-            // - Technical parameters
-            // - Supplier
-            // - Datasheet reference
-            // - Cost information
-            //
-            // =================================================
-
-            equipment: {
-
-                solarPanels: [],
-
-                hybridInverters: [],
-
-                batteries: [],
-
-                protectionDevices: [],
-
-                cables: [],
-
-                dcCombiners: [],
-
-                acPanels: [],
-
-                busbars: [],
-
-                connectors: [],
-
-                monitoring: [],
-
-                other: []
-            },
-
-
-            // =================================================
-            // ENGINEERING VERIFICATION
-            // =================================================
-
-            engineering: {
-
-                status: "not_started",
-
-                checks: [],
-
-                warnings: [],
-
-                errors: [],
-
-                assumptions: [],
-
-                notes: ""
-            },
-
-
-            // =================================================
-            // WIRING DESIGN
-            // =================================================
-
-            wiring: {
-
-                components: [],
-
-                connections: [],
-
-                canvas: {
-
-                    zoom: 1,
-
-                    panX: 0,
-
-                    panY: 0
-                },
-
-                notes: ""
-            },
-
-
-            // =================================================
-            // BILL OF MATERIALS
-            // =================================================
-
-            bom: {
-
-                items: [],
-
-                notes: ""
-            },
-
-
-            // =================================================
-            // COSTING
-            // =================================================
-
-            costing: {
-
-                materialCost: 0,
-
-                laborCost: 0,
-
-                transportCost: 0,
-
-                overheadCost: 0,
-
-                otherCost: 0,
-
-                totalProjectCost: 0,
-
-                marginPercent: 0,
-
-                marginAmount: 0,
-
-                sellingPrice: 0,
-
-                notes: ""
-            },
-
-
-            // =================================================
-            // QUOTATION
-            // =================================================
-
-            quotation: {
-
-                quotationNumber: "",
-
-                date: "",
-
-                validityDays: 30,
-
-                paymentTerms: "",
-
-                warrantyTerms: "",
-
-                inclusions: [],
-
-                exclusions: [],
-
-                notes: ""
-            },
-
-
-            // =================================================
-            // INSTALLATION
-            // =================================================
-
-            installation: {
-
-                status: "not_started",
-
-                startDate: "",
-
-                completionDate: "",
-
-                installer: "",
-
-                checklist: [],
-
-                notes: ""
-            },
-
-
-            // =================================================
-            // COMMISSIONING
-            // =================================================
-
-            commissioning: {
-
-                status: "not_started",
-
-                date: "",
-
-                technician: "",
-
-                tests: [],
-
-                measuredValues: [],
-
-                issues: [],
-
-                notes: ""
-            },
-
-
-            // =================================================
-            // PROJECT NOTES
-            // =================================================
-
-            notes: "",
-
-
-            // =================================================
-            // REPORT INFORMATION
-            // =================================================
-
-            reports: {
-
-                generated: [],
-
-                lastGeneratedAt: null
-            }
-        };
-    },
-
-
-    // --------------------------------------------------------
-    // Generate a unique project ID
-    // --------------------------------------------------------
-
-    generateProjectId() {
-
-        const timestamp = Date.now();
-
-        const randomPart = Math.random()
-            .toString(36)
-            .substring(2, 8)
-            .toUpperCase();
-
-        return `SF-${timestamp}-${randomPart}`;
-    },
-
-
-    // --------------------------------------------------------
-    // Update the project's updated timestamp
-    // --------------------------------------------------------
-
-    touch(project) {
-
-        if (!project || !project.project) {
-
-            throw new Error(
-                "Invalid SolarForge project."
-            );
-        }
-
-        project.project.updatedAt =
-            new Date().toISOString();
-
-        return project;
-    },
-
-
-    // --------------------------------------------------------
-    // Add an appliance
-    // --------------------------------------------------------
-
-    addAppliance(project, appliance = {}) {
-
-        if (!project || !project.energy) {
-
-            throw new Error(
-                "Invalid SolarForge project."
-            );
-        }
-
-        const newAppliance = {
-
-            id: this.generateItemId("APP"),
-
-            name: appliance.name || "",
-
-            quantity: this.toNumber(
-                appliance.quantity,
-                1
-            ),
-
-            ratedPowerW: this.toNumber(
-                appliance.ratedPowerW,
-                0
-            ),
-
-            totalHoursPerDay: this.toNumber(
-                appliance.totalHoursPerDay,
-                0
-            ),
-
-            daytimeHours: this.toNumber(
-                appliance.daytimeHours,
-                0
-            ),
-
-            nighttimeHours: this.toNumber(
-                appliance.nighttimeHours,
-                0
-            ),
-
-            continuous: Boolean(
-                appliance.continuous
-            ),
-
-            priority: appliance.priority || "optional",
-
-            startingSurgeW: this.toNumber(
-                appliance.startingSurgeW,
-                0
-            ),
-
-            dutyCyclePercent: this.toNumber(
-                appliance.dutyCyclePercent,
-                100
-            ),
-
-            simultaneousUse: Boolean(
-                appliance.simultaneousUse
-            ),
-
-            notes: appliance.notes || ""
-        };
-
-        project.energy.appliances.push(
-            newAppliance
-        );
-
-        this.touch(project);
-
-        return newAppliance;
-    },
-
-
-    // --------------------------------------------------------
-    // Remove an appliance
-    // --------------------------------------------------------
-
-    removeAppliance(project, applianceId) {
-
-        if (!project || !project.energy) {
-
-            throw new Error(
-                "Invalid SolarForge project."
-            );
-        }
-
-        project.energy.appliances =
-            project.energy.appliances.filter(
-                appliance =>
-                    appliance.id !== applianceId
-            );
-
-        this.touch(project);
-    },
-
-
-    // --------------------------------------------------------
-    // Add equipment
-    // --------------------------------------------------------
-
-    addEquipment(
-        project,
-        category,
-        equipment = {}
-    ) {
-
-        if (!project || !project.equipment) {
-
-            throw new Error(
-                "Invalid SolarForge project."
-            );
-        }
-
-        if (
-            !Object.prototype.hasOwnProperty.call(
-                project.equipment,
-                category
-            )
-        ) {
-
-            throw new Error(
-                `Unknown equipment category: ${category}`
-            );
-        }
-
-        const newEquipment = {
-
-            id: this.generateItemId("EQP"),
-
-            category:
-                equipment.category || category,
-
-            brand:
-                equipment.brand || "",
-
-            model:
-                equipment.model || "",
-
-            partNumber:
-                equipment.partNumber || "",
-
-            quantity:
-                this.toNumber(
-                    equipment.quantity,
-                    1
-                ),
-
-            supplier:
-                equipment.supplier || "",
-
-            datasheetReference:
-                equipment.datasheetReference || "",
-
-            purchasePricePhp:
-                this.toNumber(
-                    equipment.purchasePricePhp,
-                    0
-                ),
-
-            sellingPricePhp:
-                this.toNumber(
-                    equipment.sellingPricePhp,
-                    0
-                ),
-
-            parameters:
-                equipment.parameters || {},
-
-            notes:
-                equipment.notes || ""
-        };
-
-        project.equipment[category].push(
-            newEquipment
-        );
-
-        this.touch(project);
-
-        return newEquipment;
-    },
-
-
-    // --------------------------------------------------------
-    // Remove equipment
-    // --------------------------------------------------------
-
-    removeEquipment(
-        project,
-        category,
-        equipmentId
-    ) {
-
-        if (!project || !project.equipment) {
-
-            throw new Error(
-                "Invalid SolarForge project."
-            );
-        }
-
-        if (
-            !Object.prototype.hasOwnProperty.call(
-                project.equipment,
-                category
-            )
-        ) {
-
-            throw new Error(
-                `Unknown equipment category: ${category}`
-            );
-        }
-
-        project.equipment[category] =
-            project.equipment[category].filter(
-                item =>
-                    item.id !== equipmentId
-            );
-
-        this.touch(project);
-    },
-
-
-    // --------------------------------------------------------
-    // Add an engineering check
-    // --------------------------------------------------------
-
-    addEngineeringCheck(
-        project,
-        check = {}
-    ) {
-
-        if (!project || !project.engineering) {
-
-            throw new Error(
-                "Invalid SolarForge project."
-            );
-        }
-
-        const engineeringCheck = {
-
-            id: this.generateItemId("CHK"),
-
-            category:
-                check.category || "",
-
-            name:
-                check.name || "",
-
-            status:
-                check.status || "review",
-
-            value:
-                check.value ?? null,
-
-            expected:
-                check.expected ?? null,
-
-            unit:
-                check.unit || "",
-
-            message:
-                check.message || "",
-
-            notes:
-                check.notes || ""
-        };
-
-        project.engineering.checks.push(
-            engineeringCheck
-        );
-
-        this.touch(project);
-
-        return engineeringCheck;
-    },
-
-
-    // --------------------------------------------------------
-    // Add a BOM item
-    // --------------------------------------------------------
-
-    addBomItem(project, item = {}) {
-
-        if (!project || !project.bom) {
-
-            throw new Error(
-                "Invalid SolarForge project."
-            );
-        }
-
-        const bomItem = {
-
-            id: this.generateItemId("BOM"),
-
-            category:
-                item.category || "",
-
-            description:
-                item.description || "",
-
-            brand:
-                item.brand || "",
-
-            model:
-                item.model || "",
-
-            specification:
-                item.specification || "",
-
-            quantity:
-                this.toNumber(
-                    item.quantity,
-                    1
-                ),
-
-            unit:
-                item.unit || "pcs",
-
-            supplier:
-                item.supplier || "",
-
-            unitCostPhp:
-                this.toNumber(
-                    item.unitCostPhp,
-                    0
-                ),
-
-            totalCostPhp:
-                this.toNumber(
-                    item.totalCostPhp,
-                    0
-                ),
-
-            notes:
-                item.notes || ""
-        };
-
-        project.bom.items.push(
-            bomItem
-        );
-
-        this.touch(project);
-
-        return bomItem;
-    },
-
-
-    // --------------------------------------------------------
-    // Generate a generic item ID
-    // --------------------------------------------------------
-
-    generateItemId(prefix) {
-
-        const timestamp = Date.now();
-
-        const randomPart = Math.random()
-            .toString(36)
-            .substring(2, 7)
-            .toUpperCase();
-
-        return `${prefix}-${timestamp}-${randomPart}`;
-    },
-
-
-    // --------------------------------------------------------
-    // Safely convert a value to a number
-    // --------------------------------------------------------
-
-    toNumber(value, fallback = 0) {
-
-        const number =
-            Number(value);
-
-        return Number.isFinite(number)
-            ? number
-            : fallback;
-    },
-
-
-    // --------------------------------------------------------
-    // Clone a project
-    // --------------------------------------------------------
-
-    clone(project) {
-
-        return JSON.parse(
-            JSON.stringify(project)
-        );
-    },
-
-
-    // --------------------------------------------------------
-    // Validate the basic project structure
-    // --------------------------------------------------------
-
-    validate(project) {
-
-        const errors = [];
-
-        if (!project) {
-
-            errors.push(
-                "Project object is missing."
-            );
 
             return {
-                valid: false,
-                errors
+
+                schemaVersion: SCHEMA_VERSION,
+
+
+                project: {
+
+                    id: projectId,
+
+                    projectNumber: projectNumber,
+
+                    name: "New Solar Project",
+
+                    status: "new",
+
+                    revision: 1,
+
+                    createdAt: now,
+
+                    updatedAt: now
+
+                },
+
+
+                /* =========================================
+                   CUSTOMER
+                ========================================== */
+
+                customer: {
+
+                    name: "",
+
+                    company: "",
+
+                    contactNumber: "",
+
+                    email: "",
+
+                    address: "",
+
+                    notes: ""
+
+                },
+
+
+                /* =========================================
+                   SITE
+                ========================================== */
+
+                site: {
+
+                    address: "",
+
+                    installationType: "residential",
+
+                    roofType: "",
+
+                    roofMaterial: "",
+
+                    mountingType: "",
+
+                    gridConnection: "grid-connected",
+
+                    servicePhase: "single-phase",
+
+                    serviceVoltage: 230,
+
+                    frequencyHz: 60,
+
+                    mainBreakerRatingA: "",
+
+                    existingElectricalPanel: "",
+
+                    backupLoadPanel: "",
+
+                    siteNotes: ""
+
+                },
+
+
+                /* =========================================
+                   ENERGY
+                ========================================== */
+
+                energy: {
+
+                    monthlyConsumptionKwh: 0,
+
+                    monthlyBillPhp: 0,
+
+                    electricityRatePhpPerKwh: 0,
+
+
+                    appliances: [],
+
+
+                    calculated: {
+
+                        dailyConsumptionKwh: 0,
+
+                        daytimeEnergyKwh: 0,
+
+                        nighttimeEnergyKwh: 0,
+
+                        continuousEnergyKwh: 0,
+
+                        essentialEnergyKwh: 0,
+
+                        estimatedPeakLoadKw: 0,
+
+                        estimatedNightPeakLoadKw: 0
+
+                    },
+
+
+                    consumptionCrossCheck: {
+
+                        calculatedMonthlyKwh: 0,
+
+                        enteredMonthlyKwh: 0,
+
+                        differenceKwh: 0,
+
+                        differencePercent: 0,
+
+                        status: "not_checked"
+
+                    }
+
+                },
+
+
+                /* =========================================
+                   PRELIMINARY DESIGN
+                ========================================== */
+
+                preliminary: {
+
+                    status: "not_started",
+
+
+                    assumptions: {
+
+                        peakSunHoursPerDay: 4.5,
+
+                        pvSystemEfficiencyPercent: 80,
+
+                        inverterEfficiencyPercent: 95,
+
+                        batteryEfficiencyPercent: 90,
+
+                        batteryUsableDoDPercent: 80,
+
+                        designReservePercent: 20,
+
+                        backupHoursRequired: 4
+
+                    },
+
+
+                    results: {
+
+                        estimatedPvCapacityKw: 0,
+
+                        estimatedInverterCapacityKw: 0,
+
+                        estimatedBatteryUsableKwh: 0,
+
+                        estimatedBatteryNominalKwh: 0,
+
+                        estimatedBackupEnergyKwh: 0,
+
+                        estimatedPeakDemandKw: 0
+
+                    },
+
+
+                    warnings: [],
+
+                    notes: ""
+
+                },
+
+
+                /* =========================================
+                   EQUIPMENT
+                ========================================== */
+
+                equipment: {
+
+                    solarPanels: [],
+
+                    hybridInverters: [],
+
+                    batteries: [],
+
+                    protectionDevices: [],
+
+                    cables: [],
+
+                    dcCombiners: [],
+
+                    acPanels: [],
+
+                    busbars: [],
+
+                    connectors: [],
+
+                    monitoring: [],
+
+                    other: []
+
+                },
+
+
+                /* =========================================
+                   ENGINEERING
+                ========================================== */
+
+                engineering: {
+
+                    status: "not_started",
+
+                    checks: [],
+
+                    warnings: [],
+
+                    errors: [],
+
+                    assumptions: [],
+
+                    notes: ""
+
+                },
+
+
+                /* =========================================
+                   WIRING
+                ========================================== */
+
+                wiring: {
+
+                    components: [],
+
+                    connections: [],
+
+                    canvas: {
+
+                        zoom: 1,
+
+                        panX: 0,
+
+                        panY: 0
+
+                    },
+
+                    notes: ""
+
+                },
+
+
+                /* =========================================
+                   BILL OF MATERIALS
+                ========================================== */
+
+                bom: {
+
+                    items: [],
+
+                    notes: ""
+
+                },
+
+
+                /* =========================================
+                   COSTING
+                ========================================== */
+
+                costing: {
+
+                    materialCost: 0,
+
+                    laborCost: 0,
+
+                    transportCost: 0,
+
+                    overheadCost: 0,
+
+                    otherCost: 0,
+
+                    totalProjectCost: 0,
+
+                    marginPercent: 0,
+
+                    marginAmount: 0,
+
+                    sellingPrice: 0,
+
+                    notes: ""
+
+                },
+
+
+                /* =========================================
+                   QUOTATION
+                ========================================== */
+
+                quotation: {
+
+                    quotationNumber: "",
+
+                    date: "",
+
+                    validityDays: 30,
+
+                    paymentTerms: "",
+
+                    warrantyTerms: "",
+
+                    inclusions: "",
+
+                    exclusions: "",
+
+                    notes: ""
+
+                },
+
+
+                /* =========================================
+                   INSTALLATION
+                ========================================== */
+
+                installation: {
+
+                    status: "not_started",
+
+                    startDate: "",
+
+                    completionDate: "",
+
+                    installer: "",
+
+                    checklist: [],
+
+                    notes: ""
+
+                },
+
+
+                /* =========================================
+                   COMMISSIONING
+                ========================================== */
+
+                commissioning: {
+
+                    status: "not_started",
+
+                    date: "",
+
+                    technician: "",
+
+                    tests: [],
+
+                    measuredValues: {},
+
+                    issues: [],
+
+                    notes: ""
+
+                },
+
+
+                /* =========================================
+                   GENERAL NOTES
+                ========================================== */
+
+                notes: "",
+
+
+                /* =========================================
+                   REPORTS
+                ========================================== */
+
+                reports: []
+
             };
-        }
 
-        if (!project.project) {
+        },
 
-            errors.push(
-                "Project information is missing."
+
+        /* =================================================
+           ID GENERATION
+        ================================================== */
+
+        generateProjectId: function () {
+
+            return (
+                "SF-" +
+                Date.now().toString(36).toUpperCase() +
+                "-" +
+                Math.random()
+                    .toString(36)
+                    .substring(2, 8)
+                    .toUpperCase()
             );
-        }
 
-        if (!project.customer) {
+        },
 
-            errors.push(
-                "Customer information is missing."
+
+        generateProjectNumber: function () {
+
+            const date =
+                new Date();
+
+            const year =
+                date.getFullYear();
+
+
+            const random =
+                Math.floor(
+                    1000 +
+                    Math.random() * 9000
+                );
+
+
+            return (
+                "SF-" +
+                year +
+                "-" +
+                random
             );
-        }
 
-        if (!project.site) {
+        },
 
-            errors.push(
-                "Site information is missing."
+
+        generateItemId: function () {
+
+            return (
+                "ITEM-" +
+                Date.now().toString(36) +
+                "-" +
+                Math.random()
+                    .toString(36)
+                    .substring(2, 7)
             );
-        }
 
-        if (!project.energy) {
+        },
 
-            errors.push(
-                "Energy analysis section is missing."
+
+        /* =================================================
+           TOUCH PROJECT
+        ================================================== */
+
+        touch: function (project) {
+
+            if (!project) {
+                return project;
+            }
+
+
+            if (!project.project) {
+
+                project.project = {};
+
+            }
+
+
+            project.project.updatedAt =
+                new Date().toISOString();
+
+
+            return project;
+
+        },
+
+
+        /* =================================================
+           ADD APPLIANCE
+        ================================================== */
+
+        addAppliance: function (
+            project,
+            applianceData
+        ) {
+
+            if (!project) {
+                throw new Error(
+                    "Project is required."
+                );
+            }
+
+
+            if (!project.energy) {
+
+                project.energy = {
+                    appliances: []
+                };
+
+            }
+
+
+            if (!Array.isArray(
+                project.energy.appliances
+            )) {
+
+                project.energy.appliances = [];
+
+            }
+
+
+            const appliance = {
+
+                id: this.generateItemId(),
+
+                name:
+                    applianceData?.name ||
+                    "New Appliance",
+
+                category:
+                    applianceData?.category ||
+                    "General",
+
+                quantity:
+                    this.toNumber(
+                        applianceData?.quantity,
+                        1
+                    ),
+
+                ratedPowerW:
+                    this.toNumber(
+                        applianceData?.ratedPowerW,
+                        0
+                    ),
+
+                totalHoursPerDay:
+                    this.toNumber(
+                        applianceData?.totalHoursPerDay,
+                        0
+                    ),
+
+                daytimeHours:
+                    this.toNumber(
+                        applianceData?.daytimeHours,
+                        0
+                    ),
+
+                nighttimeHours:
+                    this.toNumber(
+                        applianceData?.nighttimeHours,
+                        0
+                    ),
+
+                continuous:
+                    Boolean(
+                        applianceData?.continuous
+                    ),
+
+                priority:
+                    applianceData?.priority ||
+                    "important",
+
+                startingSurgeW:
+                    this.toNumber(
+                        applianceData?.startingSurgeW,
+                        0
+                    ),
+
+                dutyCyclePercent:
+                    this.toNumber(
+                        applianceData?.dutyCyclePercent,
+                        100
+                    ),
+
+                simultaneousUse:
+                    Boolean(
+                        applianceData?.simultaneousUse
+                    ),
+
+                notes:
+                    applianceData?.notes ||
+                    ""
+
+            };
+
+
+            project.energy.appliances.push(
+                appliance
             );
-        }
 
-        if (!project.preliminary) {
 
-            errors.push(
-                "Preliminary design section is missing."
+            this.touch(project);
+
+
+            return appliance;
+
+        },
+
+
+        /* =================================================
+           REMOVE APPLIANCE
+        ================================================== */
+
+        removeAppliance: function (
+            project,
+            applianceId
+        ) {
+
+            if (
+                !project ||
+                !project.energy ||
+                !Array.isArray(
+                    project.energy.appliances
+                )
+            ) {
+
+                return false;
+
+            }
+
+
+            const originalLength =
+                project.energy.appliances.length;
+
+
+            project.energy.appliances =
+                project.energy.appliances.filter(
+                    function (item) {
+                        return item.id !== applianceId;
+                    }
+                );
+
+
+            const removed =
+                project.energy.appliances.length !==
+                originalLength;
+
+
+            if (removed) {
+
+                this.touch(project);
+
+            }
+
+
+            return removed;
+
+        },
+
+
+        /* =================================================
+           ADD EQUIPMENT
+        ================================================== */
+
+        addEquipment: function (
+            project,
+            category,
+            equipmentData
+        ) {
+
+            if (!project) {
+
+                throw new Error(
+                    "Project is required."
+                );
+
+            }
+
+
+            if (
+                !project.equipment[category]
+            ) {
+
+                project.equipment[category] = [];
+
+            }
+
+
+            const equipment = {
+
+                id: this.generateItemId(),
+
+                category: category,
+
+                brand:
+                    equipmentData?.brand ||
+                    "",
+
+                model:
+                    equipmentData?.model ||
+                    "",
+
+                partNumber:
+                    equipmentData?.partNumber ||
+                    "",
+
+                quantity:
+                    this.toNumber(
+                        equipmentData?.quantity,
+                        1
+                    ),
+
+                specifications:
+                    equipmentData?.specifications ||
+                    {},
+
+                supplier:
+                    equipmentData?.supplier ||
+                    "",
+
+                datasheet:
+                    equipmentData?.datasheet ||
+                    "",
+
+                purchasePrice:
+                    this.toNumber(
+                        equipmentData?.purchasePrice,
+                        0
+                    ),
+
+                sellingPrice:
+                    this.toNumber(
+                        equipmentData?.sellingPrice,
+                        0
+                    ),
+
+                serialNumber:
+                    equipmentData?.serialNumber ||
+                    "",
+
+                notes:
+                    equipmentData?.notes ||
+                    ""
+
+            };
+
+
+            project.equipment[category].push(
+                equipment
             );
-        }
 
-        if (!project.equipment) {
 
-            errors.push(
-                "Equipment section is missing."
+            this.touch(project);
+
+
+            return equipment;
+
+        },
+
+
+        /* =================================================
+           REMOVE EQUIPMENT
+        ================================================== */
+
+        removeEquipment: function (
+            project,
+            category,
+            equipmentId
+        ) {
+
+            if (
+                !project ||
+                !project.equipment ||
+                !Array.isArray(
+                    project.equipment[category]
+                )
+            ) {
+
+                return false;
+
+            }
+
+
+            const originalLength =
+                project.equipment[category].length;
+
+
+            project.equipment[category] =
+                project.equipment[category].filter(
+                    function (item) {
+
+                        return item.id !== equipmentId;
+
+                    }
+                );
+
+
+            const removed =
+                project.equipment[category].length !==
+                originalLength;
+
+
+            if (removed) {
+
+                this.touch(project);
+
+            }
+
+
+            return removed;
+
+        },
+
+
+        /* =================================================
+           ADD ENGINEERING CHECK
+        ================================================== */
+
+        addEngineeringCheck: function (
+            project,
+            checkData
+        ) {
+
+            if (!project) {
+
+                throw new Error(
+                    "Project is required."
+                );
+
+            }
+
+
+            if (
+                !project.engineering
+            ) {
+
+                project.engineering = {};
+
+            }
+
+
+            if (
+                !Array.isArray(
+                    project.engineering.checks
+                )
+            ) {
+
+                project.engineering.checks = [];
+
+            }
+
+
+            const check = {
+
+                id: this.generateItemId(),
+
+                name:
+                    checkData?.name ||
+                    "Engineering Check",
+
+                category:
+                    checkData?.category ||
+                    "General",
+
+                status:
+                    checkData?.status ||
+                    "review",
+
+                requirement:
+                    checkData?.requirement ||
+                    "",
+
+                actual:
+                    checkData?.actual ||
+                    "",
+
+                result:
+                    checkData?.result ||
+                    "",
+
+                notes:
+                    checkData?.notes ||
+                    ""
+
+            };
+
+
+            project.engineering.checks.push(
+                check
             );
-        }
 
-        if (!project.engineering) {
 
-            errors.push(
-                "Engineering section is missing."
+            this.touch(project);
+
+
+            return check;
+
+        },
+
+
+        /* =================================================
+           ADD BOM ITEM
+        ================================================== */
+
+        addBomItem: function (
+            project,
+            itemData
+        ) {
+
+            if (!project) {
+
+                throw new Error(
+                    "Project is required."
+                );
+
+            }
+
+
+            if (!project.bom) {
+
+                project.bom = {};
+
+            }
+
+
+            if (!Array.isArray(
+                project.bom.items
+            )) {
+
+                project.bom.items = [];
+
+            }
+
+
+            const item = {
+
+                id: this.generateItemId(),
+
+                category:
+                    itemData?.category ||
+                    "General",
+
+                description:
+                    itemData?.description ||
+                    "",
+
+                brand:
+                    itemData?.brand ||
+                    "",
+
+                model:
+                    itemData?.model ||
+                    "",
+
+                quantity:
+                    this.toNumber(
+                        itemData?.quantity,
+                        1
+                    ),
+
+                unit:
+                    itemData?.unit ||
+                    "pcs",
+
+                unitCost:
+                    this.toNumber(
+                        itemData?.unitCost,
+                        0
+                    ),
+
+                totalCost:
+                    this.toNumber(
+                        itemData?.totalCost,
+                        0
+                    ),
+
+                supplier:
+                    itemData?.supplier ||
+                    "",
+
+                notes:
+                    itemData?.notes ||
+                    ""
+
+            };
+
+
+            if (
+                item.totalCost === 0 &&
+                item.unitCost > 0
+            ) {
+
+                item.totalCost =
+                    item.unitCost *
+                    item.quantity;
+
+            }
+
+
+            project.bom.items.push(
+                item
             );
-        }
 
-        if (!project.wiring) {
 
-            errors.push(
-                "Wiring section is missing."
+            this.touch(project);
+
+
+            return item;
+
+        },
+
+
+        /* =================================================
+           NUMBER HELPER
+        ================================================== */
+
+        toNumber: function (
+            value,
+            fallback
+        ) {
+
+            const number =
+                Number(value);
+
+
+            if (
+                Number.isFinite(number)
+            ) {
+
+                return number;
+
+            }
+
+
+            return (
+                fallback === undefined
+                    ? 0
+                    : fallback
             );
-        }
 
-        if (!project.bom) {
+        },
 
-            errors.push(
-                "BOM section is missing."
+
+        /* =================================================
+           CLONE
+        ================================================== */
+
+        clone: function (
+            project
+        ) {
+
+            if (!project) {
+                return null;
+            }
+
+
+            return JSON.parse(
+                JSON.stringify(project)
             );
-        }
 
-        if (!project.costing) {
+        },
 
-            errors.push(
-                "Costing section is missing."
+
+        /* =================================================
+           VALIDATE
+        ================================================== */
+
+        validate: function (
+            project
+        ) {
+
+            const errors = [];
+
+
+            if (!project) {
+
+                errors.push(
+                    "Project data is missing."
+                );
+
+                return {
+
+                    valid: false,
+
+                    errors: errors
+
+                };
+
+            }
+
+
+            if (!project.project) {
+
+                errors.push(
+                    "Project information is missing."
+                );
+
+            }
+
+
+            if (
+                !project.project ||
+                !project.project.id
+            ) {
+
+                errors.push(
+                    "Project ID is missing."
+                );
+
+            }
+
+
+            if (
+                !project.project ||
+                !project.project.name
+            ) {
+
+                errors.push(
+                    "Project name is missing."
+                );
+
+            }
+
+
+            return {
+
+                valid:
+                    errors.length === 0,
+
+                errors: errors
+
+            };
+
+        },
+
+
+        /* =================================================
+           NORMALIZE IMPORTED PROJECT
+        ================================================== */
+
+        normalize: function (
+            imported
+        ) {
+
+            const base =
+                this.createNewProject();
+
+
+            if (
+                !imported ||
+                typeof imported !== "object"
+            ) {
+
+                return base;
+
+            }
+
+
+            const merge =
+                function (
+                    target,
+                    source
+                ) {
+
+                    Object.keys(source)
+                        .forEach(
+                            function (key) {
+
+                                if (
+                                    source[key] &&
+                                    typeof source[key] ===
+                                    "object" &&
+                                    !Array.isArray(
+                                        source[key]
+                                    )
+                                ) {
+
+                                    if (
+                                        !target[key] ||
+                                        typeof target[key] !==
+                                        "object"
+                                    ) {
+
+                                        target[key] = {};
+
+                                    }
+
+
+                                    merge(
+                                        target[key],
+                                        source[key]
+                                    );
+
+                                } else {
+
+                                    target[key] =
+                                        source[key];
+
+                                }
+
+                            }
+                        );
+
+                };
+
+
+            merge(
+                base,
+                imported
             );
+
+
+            return base;
+
         }
 
-        if (!project.installation) {
-
-            errors.push(
-                "Installation section is missing."
-            );
-        }
-
-        if (!project.commissioning) {
-
-            errors.push(
-                "Commissioning section is missing."
-            );
-        }
-
-        return {
-
-            valid:
-                errors.length === 0,
-
-            errors
-        };
-    }
-};
+    };
 
 
-// ============================================================
-// Create a global reference
-// ============================================================
-//
-// Other SolarForge modules can access the project model with:
-//
-// SolarForgeProject.createNewProject()
-//
-// ============================================================
+    /* =====================================================
+       EXPOSE GLOBAL
+    ====================================================== */
 
-window.SolarForgeProject = SolarForgeProject;
+    window.SolarForgeProject =
+        SolarForgeProject;
+
+
+    /*
+     * Explicit initialization marker.
+     */
+
+    window.SolarForgeProjectReady =
+        true;
+
+
+    console.log(
+        "SolarForgeProject loaded successfully."
+    );
+
+
+})();
