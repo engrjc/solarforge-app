@@ -12,7 +12,7 @@
 
     <meta
         name="theme-color"
-        content="#07111f"
+        content="#050d18"
     >
 
     <meta
@@ -25,27 +25,673 @@
         content="black-translucent"
     >
 
-    <meta
-        name="apple-mobile-web-app-title"
-        content="SolarForge"
-    >
-
-    <meta
-        name="description"
-        content="SolarForge — Solar System Design & Installation Platform"
-    >
-
-    <title>SolarForge</title>
-
-
-    <!-- =====================================================
-         MAIN STYLESHEET
-         ===================================================== -->
+    <title>
+        SolarForge — Solar System Design & Installation Platform
+    </title>
 
     <link
         rel="stylesheet"
         href="css/app.css"
     >
+
+
+    <!-- =====================================================
+         SOLARFORGE STARTUP ANIMATION
+    ====================================================== -->
+
+    <style>
+
+        /* =================================================
+           STARTUP SCREEN
+        ================================================== */
+
+        #solarforgeSplash {
+
+            position: fixed;
+
+            inset: 0;
+
+            z-index: 99999;
+
+            width: 100%;
+
+            height: 100dvh;
+
+            min-height: 100vh;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            overflow: hidden;
+
+            background:
+                radial-gradient(
+                    circle at center,
+                    rgba(20, 83, 145, 0.16),
+                    transparent 38%
+                ),
+                #050d18;
+
+            color: #ffffff;
+
+            transition:
+                opacity 0.65s ease,
+                visibility 0.65s ease;
+
+        }
+
+
+        #solarforgeSplash.hidden {
+
+            opacity: 0;
+
+            visibility: hidden;
+
+            pointer-events: none;
+
+        }
+
+
+        /* =================================================
+           BACKGROUND GRID
+        ================================================== */
+
+        .splash-grid {
+
+            position: absolute;
+
+            inset: 0;
+
+            opacity: 0.22;
+
+            background-image:
+
+                linear-gradient(
+                    rgba(80, 150, 220, 0.08) 1px,
+                    transparent 1px
+                ),
+
+                linear-gradient(
+                    90deg,
+                    rgba(80, 150, 220, 0.08) 1px,
+                    transparent 1px
+                );
+
+            background-size: 42px 42px;
+
+            animation:
+                splashGridMove 8s linear infinite;
+
+        }
+
+
+        @keyframes splashGridMove {
+
+            from {
+                transform: translate(0, 0);
+            }
+
+            to {
+                transform: translate(42px, 42px);
+            }
+
+        }
+
+
+        /* =================================================
+           SPLASH CONTENT
+        ================================================== */
+
+        .splash-content {
+
+            position: relative;
+
+            z-index: 2;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            text-align: center;
+
+            padding: 24px;
+
+        }
+
+
+        /* =================================================
+           SOLAR SYMBOL
+        ================================================== */
+
+        .splash-sun {
+
+            position: relative;
+
+            width: 118px;
+
+            height: 118px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            margin-bottom: 28px;
+
+            opacity: 0;
+
+            transform: scale(0.65);
+
+            animation:
+                splashSunIn 1.1s
+                cubic-bezier(.2,.8,.2,1)
+                0.15s forwards;
+
+        }
+
+
+        .splash-sun-ring {
+
+            position: absolute;
+
+            inset: 0;
+
+            border-radius: 50%;
+
+            border: 1px solid rgba(64, 157, 255, 0.32);
+
+            box-shadow:
+                0 0 30px rgba(44, 139, 255, 0.12),
+                inset 0 0 30px rgba(44, 139, 255, 0.06);
+
+            animation:
+                splashRingPulse 2.4s
+                ease-in-out
+                infinite;
+
+        }
+
+
+        .splash-sun-ring-two {
+
+            position: absolute;
+
+            inset: 15px;
+
+            border-radius: 50%;
+
+            border: 1px solid rgba(255, 255, 255, 0.10);
+
+        }
+
+
+        .splash-sun-core {
+
+            position: relative;
+
+            width: 58px;
+
+            height: 58px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 50%;
+
+            font-size: 42px;
+
+            line-height: 1;
+
+            background:
+                radial-gradient(
+                    circle,
+                    #ffe68a 0%,
+                    #f7b72f 52%,
+                    #d77c14 100%
+                );
+
+            box-shadow:
+                0 0 20px rgba(255, 191, 53, 0.55),
+                0 0 55px rgba(255, 168, 30, 0.22);
+
+            animation:
+                splashSunGlow 2s
+                ease-in-out
+                infinite;
+
+        }
+
+
+        @keyframes splashSunIn {
+
+            0% {
+
+                opacity: 0;
+
+                transform: scale(0.65);
+
+            }
+
+            60% {
+
+                opacity: 1;
+
+                transform: scale(1.06);
+
+            }
+
+            100% {
+
+                opacity: 1;
+
+                transform: scale(1);
+
+            }
+
+        }
+
+
+        @keyframes splashRingPulse {
+
+            0%,
+            100% {
+
+                transform: scale(1);
+
+                opacity: 0.55;
+
+            }
+
+            50% {
+
+                transform: scale(1.08);
+
+                opacity: 1;
+
+            }
+
+        }
+
+
+        @keyframes splashSunGlow {
+
+            0%,
+            100% {
+
+                box-shadow:
+                    0 0 20px rgba(255, 191, 53, 0.55),
+                    0 0 55px rgba(255, 168, 30, 0.22);
+
+            }
+
+            50% {
+
+                box-shadow:
+                    0 0 30px rgba(255, 205, 75, 0.75),
+                    0 0 75px rgba(255, 168, 30, 0.32);
+
+            }
+
+        }
+
+
+        /* =================================================
+           BRAND
+        ================================================== */
+
+        .splash-brand {
+
+            margin: 0;
+
+            font-size:
+                clamp(
+                    42px,
+                    7vw,
+                    72px
+                );
+
+            line-height: 1;
+
+            font-weight: 750;
+
+            letter-spacing: -2px;
+
+            opacity: 0;
+
+            transform: translateY(18px);
+
+            animation:
+                splashBrandIn
+                0.8s
+                ease
+                0.75s
+                forwards;
+
+        }
+
+
+        .splash-brand span {
+
+            color: #4199f4;
+
+        }
+
+
+        @keyframes splashBrandIn {
+
+            to {
+
+                opacity: 1;
+
+                transform: translateY(0);
+
+            }
+
+        }
+
+
+        /* =================================================
+           SUBTITLE
+        ================================================== */
+
+        .splash-subtitle {
+
+            margin-top: 14px;
+
+            color: #8499b2;
+
+            font-size:
+                clamp(
+                    13px,
+                    2vw,
+                    17px
+                );
+
+            letter-spacing:
+                clamp(
+                    1.5px,
+                    0.35vw,
+                    3px
+                );
+
+            text-transform: uppercase;
+
+            opacity: 0;
+
+            transform: translateY(12px);
+
+            animation:
+                splashSubtitleIn
+                0.8s
+                ease
+                1.05s
+                forwards;
+
+        }
+
+
+        @keyframes splashSubtitleIn {
+
+            to {
+
+                opacity: 1;
+
+                transform: translateY(0);
+
+            }
+
+        }
+
+
+        /* =================================================
+           LOADING
+        ================================================== */
+
+        .splash-loading {
+
+            width: 180px;
+
+            margin-top: 42px;
+
+            opacity: 0;
+
+            animation:
+                splashLoadingIn
+                0.6s
+                ease
+                1.3s
+                forwards;
+
+        }
+
+
+        .splash-loading-text {
+
+            margin-bottom: 10px;
+
+            color: #61758e;
+
+            font-size: 11px;
+
+            letter-spacing: 2px;
+
+            text-transform: uppercase;
+
+        }
+
+
+        .splash-progress {
+
+            width: 100%;
+
+            height: 3px;
+
+            overflow: hidden;
+
+            border-radius: 99px;
+
+            background:
+                rgba(255, 255, 255, 0.08);
+
+        }
+
+
+        .splash-progress-bar {
+
+            width: 0%;
+
+            height: 100%;
+
+            border-radius: inherit;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #2776c7,
+                    #53b5ff
+                );
+
+            box-shadow:
+                0 0 12px rgba(62, 166, 255, 0.5);
+
+            animation:
+                splashProgress
+                1.8s
+                cubic-bezier(.2,.7,.2,1)
+                1.35s
+                forwards;
+
+        }
+
+
+        @keyframes splashLoadingIn {
+
+            to {
+
+                opacity: 1;
+
+            }
+
+        }
+
+
+        @keyframes splashProgress {
+
+            0% {
+                width: 0%;
+            }
+
+            30% {
+                width: 32%;
+            }
+
+            65% {
+                width: 71%;
+            }
+
+            100% {
+                width: 100%;
+            }
+
+        }
+
+
+        /* =================================================
+           SPLASH FOOTER
+        ================================================== */
+
+        .splash-version {
+
+            position: absolute;
+
+            bottom: 28px;
+
+            left: 50%;
+
+            transform: translateX(-50%);
+
+            color: #43566d;
+
+            font-size: 11px;
+
+            letter-spacing: 1.5px;
+
+            white-space: nowrap;
+
+            opacity: 0;
+
+            animation:
+                splashVersionIn
+                0.7s
+                ease
+                1.4s
+                forwards;
+
+        }
+
+
+        @keyframes splashVersionIn {
+
+            to {
+
+                opacity: 1;
+
+            }
+
+        }
+
+
+        /* =================================================
+           MOBILE / IPAD
+        ================================================== */
+
+        @media (
+            max-width: 700px
+        ) {
+
+            .splash-sun {
+
+                width: 100px;
+
+                height: 100px;
+
+            }
+
+
+            .splash-sun-core {
+
+                width: 50px;
+
+                height: 50px;
+
+                font-size: 36px;
+
+            }
+
+
+            .splash-loading {
+
+                width: 160px;
+
+            }
+
+        }
+
+
+        /* =================================================
+           REDUCED MOTION
+        ================================================== */
+
+        @media (
+            prefers-reduced-motion: reduce
+        ) {
+
+            .splash-grid,
+            .splash-sun-ring,
+            .splash-sun-core {
+
+                animation: none;
+
+            }
+
+
+            .splash-sun,
+            .splash-brand,
+            .splash-subtitle,
+            .splash-loading,
+            .splash-version {
+
+                opacity: 1;
+
+                transform: none;
+
+                animation: none;
+
+            }
+
+
+            .splash-progress-bar {
+
+                width: 100%;
+
+                animation: none;
+
+            }
+
+        }
+
+    </style>
 
 </head>
 
@@ -54,18 +700,84 @@
 
 
     <!-- =====================================================
-         APPLICATION
-         ===================================================== -->
+         SOLARFORGE OPENING ANIMATION
+         
+         THIS IS ONLY THE APP STARTUP SCREEN.
+         IT IS NOT AN ERROR SCREEN.
+    ====================================================== -->
+
+    <div
+        id="solarforgeSplash"
+        aria-label="Opening SolarForge"
+    >
+
+        <div class="splash-grid"></div>
+
+
+        <div class="splash-content">
+
+
+            <div class="splash-sun">
+
+                <div class="splash-sun-ring"></div>
+
+                <div class="splash-sun-ring-two"></div>
+
+                <div class="splash-sun-core">
+                    ☀
+                </div>
+
+            </div>
+
+
+            <h1 class="splash-brand">
+                Solar<span>Forge</span>
+            </h1>
+
+
+            <div class="splash-subtitle">
+                Solar System Design & Installation Platform
+            </div>
+
+
+            <div class="splash-loading">
+
+                <div class="splash-loading-text">
+                    Initializing Workspace
+                </div>
+
+                <div class="splash-progress">
+
+                    <div class="splash-progress-bar"></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="splash-version">
+            SOLARFORGE • OFFLINE ENGINEERING WORKSPACE • v1.0.0
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         MAIN SOLARFORGE APPLICATION
+    ====================================================== -->
 
     <div
         id="app"
-        class="app"
+        style="visibility:hidden;"
     >
 
 
         <!-- =================================================
              TOP BAR
-             ================================================= -->
+        ================================================== -->
 
         <header class="topbar">
 
@@ -90,10 +802,7 @@
             </div>
 
 
-            <div
-                id="storage-status"
-                class="storage-status"
-            >
+            <div class="system-status">
 
                 <span class="status-dot"></span>
 
@@ -106,41 +815,81 @@
         </header>
 
 
+
         <!-- =================================================
-             MAIN CONTENT
-             ================================================= -->
+             HOME SCREEN
+        ================================================== -->
 
-        <main class="main-content">
+        <main class="home-screen">
 
 
-            <!-- =============================================
+            <!-- =================================================
                  HERO
-                 ============================================= -->
+            ================================================== -->
 
-            <section class="hero-section">
+            <section class="hero">
 
                 <div class="hero-content">
 
-                    <div class="hero-label">
+                    <div class="hero-badge">
                         SOLAR BUSINESS WORKSPACE
                     </div>
 
+
                     <h1>
-                        Design. Calculate.
-                        <span>Build.</span>
+                        Design.
+                        <span>Calculate.</span>
+                        Build.
                     </h1>
 
+
                     <p>
-                        Plan complete solar energy systems
-                        from customer load analysis to
-                        engineering design, wiring,
-                        costing, installation and commissioning.
+                        Plan complete solar energy systems from
+                        site analysis and system design to wiring,
+                        costing, installation, and commissioning.
                     </p>
+
+
+                    <div class="hero-actions">
+
+                        <button
+                            id="startProjectButton"
+                            class="primary-button"
+                            type="button"
+                        >
+
+                            <span class="button-icon">
+                                +
+                            </span>
+
+                            Start a Project
+
+                        </button>
+
+
+                        <button
+                            id="openProjectButton"
+                            class="secondary-button"
+                            type="button"
+                        >
+
+                            Open Existing Project
+
+                        </button>
+
+                    </div>
 
                 </div>
 
 
-                <div class="hero-sun">
+                <div class="hero-graphic">
+
+                    <div class="solar-orbit orbit-one"></div>
+
+                    <div class="solar-orbit orbit-two"></div>
+
+                    <div class="solar-orbit orbit-three"></div>
+
 
                     <div class="sun-core">
                         ☀
@@ -151,227 +900,159 @@
             </section>
 
 
-            <!-- =============================================
-                 PRIMARY ACTIONS
-                 ============================================= -->
 
-            <section class="action-section">
-
-                <button
-                    id="start-project-button"
-                    class="action-card primary-action"
-                    type="button"
-                >
-
-                    <div class="action-icon">
-                        ＋
-                    </div>
-
-                    <div class="action-content">
-
-                        <h2>
-                            Start a Project
-                        </h2>
-
-                        <p>
-                            Begin a new solar system
-                            design and installation project.
-                        </p>
-
-                    </div>
-
-                    <div class="action-arrow">
-                        →
-                    </div>
-
-                </button>
-
-
-                <button
-                    id="open-project-button"
-                    class="action-card"
-                    type="button"
-                >
-
-                    <div class="action-icon">
-                        ◫
-                    </div>
-
-                    <div class="action-content">
-
-                        <h2>
-                            Open Existing Project
-                        </h2>
-
-                        <p>
-                            Continue working on a saved
-                            SolarForge project.
-                        </p>
-
-                    </div>
-
-                    <div class="action-arrow">
-                        →
-                    </div>
-
-                </button>
-
-            </section>
-
-
-            <!-- =============================================
-                 PROJECT INFORMATION
-                 ============================================= -->
+            <!-- =================================================
+                 ACTIVE PROJECT
+            ================================================== -->
 
             <section
-                id="project-section"
-                class="project-section hidden"
+                id="activeProjectSection"
+                class="dashboard-section hidden"
             >
 
-                <div class="section-heading">
+                <div class="section-header">
 
                     <div>
 
-                        <div class="section-label">
+                        <span class="section-label">
                             ACTIVE PROJECT
-                        </div>
+                        </span>
 
-                        <h2 id="project-title">
-                            No Project
+                        <h2 id="activeProjectName">
+                            No active project
                         </h2>
 
                     </div>
 
-                    <button
-                        id="close-project-button"
-                        class="secondary-button"
-                        type="button"
-                    >
-                        Close Project
-                    </button>
 
-                </div>
-
-
-                <div class="project-card">
-
-                    <div class="project-grid">
-
-
-                        <div class="project-field">
-
-                            <span>
-                                Project Number
-                            </span>
-
-                            <strong id="project-number">
-                                —
-                            </strong>
-
-                        </div>
-
-
-                        <div class="project-field">
-
-                            <span>
-                                Status
-                            </span>
-
-                            <strong id="project-status">
-                                —
-                            </strong>
-
-                        </div>
-
-
-                        <div class="project-field">
-
-                            <span>
-                                Revision
-                            </span>
-
-                            <strong id="project-revision">
-                                —
-                            </strong>
-
-                        </div>
-
-
-                        <div class="project-field">
-
-                            <span>
-                                Last Updated
-                            </span>
-
-                            <strong id="project-updated">
-                                —
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="project-actions">
+                    <div class="section-actions">
 
                         <button
-                            id="continue-project-button"
-                            class="primary-button"
+                            id="continueProjectButton"
+                            class="primary-button small-button"
                             type="button"
                         >
-                            Continue Project →
+                            Continue Project
+                        </button>
+
+
+                        <button
+                            id="closeProjectButton"
+                            class="secondary-button small-button"
+                            type="button"
+                        >
+                            Close
                         </button>
 
                     </div>
 
                 </div>
 
+
+                <div class="project-summary">
+
+
+                    <div class="summary-card">
+
+                        <span class="summary-label">
+                            PROJECT NUMBER
+                        </span>
+
+                        <strong id="activeProjectNumber">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-card">
+
+                        <span class="summary-label">
+                            STATUS
+                        </span>
+
+                        <strong id="activeProjectStatus">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-card">
+
+                        <span class="summary-label">
+                            REVISION
+                        </span>
+
+                        <strong id="activeProjectRevision">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-card">
+
+                        <span class="summary-label">
+                            LAST UPDATED
+                        </span>
+
+                        <strong id="activeProjectUpdated">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
             </section>
 
 
-            <!-- =============================================
+
+            <!-- =================================================
                  PROJECT LIBRARY
-                 ============================================= -->
+            ================================================== -->
 
             <section
-                id="library-section"
-                class="library-section hidden"
+                id="projectLibrarySection"
+                class="dashboard-section"
             >
 
-                <div class="section-heading">
+                <div class="section-header">
 
                     <div>
 
-                        <div class="section-label">
+                        <span class="section-label">
                             PROJECT LIBRARY
-                        </div>
+                        </span>
 
                         <h2>
-                            Saved Projects
+                            Your Projects
                         </h2>
 
                     </div>
 
-                    <button
-                        id="refresh-projects-button"
-                        class="secondary-button"
-                        type="button"
+
+                    <div
+                        id="projectCount"
+                        class="project-count"
                     >
-                        Refresh
-                    </button>
+                        0 Projects
+                    </div>
 
                 </div>
 
 
                 <div
-                    id="project-list"
-                    class="project-list"
+                    id="projectLibrary"
+                    class="project-library"
                 >
 
-                    <div class="empty-state">
+                    <div class="empty-library">
 
                         <div class="empty-icon">
-                            ◫
+                            ☀
                         </div>
 
                         <h3>
@@ -379,8 +1060,8 @@
                         </h3>
 
                         <p>
-                            Start your first SolarForge
-                            project to see it here.
+                            Start your first solar system
+                            design project to begin.
                         </p>
 
                     </div>
@@ -390,177 +1071,136 @@
             </section>
 
 
-            <!-- =============================================
-                 WORKFLOW PREVIEW
-                 ============================================= -->
+
+            <!-- =================================================
+                 WORKFLOW
+            ================================================== -->
 
             <section class="workflow-section">
 
-                <div class="section-label">
-                    SOLARFORGE WORKFLOW
-                </div>
+                <div class="section-header">
 
-                <h2>
-                    From Site Survey to Commissioning
-                </h2>
+                    <div>
+
+                        <span class="section-label">
+                            SOLARFORGE WORKFLOW
+                        </span>
+
+                        <h2>
+                            From Site Survey to Commissioning
+                        </h2>
+
+                    </div>
+
+                </div>
 
 
                 <div class="workflow-grid">
 
 
-                    <div class="workflow-item">
+                    <div class="workflow-step">
 
-                        <div class="workflow-number">
+                        <span class="step-number">
                             01
-                        </div>
+                        </span>
 
-                        <div>
-                            <strong>
-                                Site & Customer
-                            </strong>
-
-                            <span>
-                                Project information
-                            </span>
-                        </div>
+                        <span class="step-title">
+                            Project Setup
+                        </span>
 
                     </div>
 
 
-                    <div class="workflow-item">
+                    <div class="workflow-step">
 
-                        <div class="workflow-number">
+                        <span class="step-number">
                             02
-                        </div>
+                        </span>
 
-                        <div>
-                            <strong>
-                                Energy Analysis
-                            </strong>
-
-                            <span>
-                                Loads and appliance schedule
-                            </span>
-                        </div>
+                        <span class="step-title">
+                            Energy Analysis
+                        </span>
 
                     </div>
 
 
-                    <div class="workflow-item">
+                    <div class="workflow-step">
 
-                        <div class="workflow-number">
+                        <span class="step-number">
                             03
-                        </div>
+                        </span>
 
-                        <div>
-                            <strong>
-                                Preliminary Design
-                            </strong>
-
-                            <span>
-                                PV, inverter and battery
-                            </span>
-                        </div>
+                        <span class="step-title">
+                            Preliminary Calculation
+                        </span>
 
                     </div>
 
 
-                    <div class="workflow-item">
+                    <div class="workflow-step">
 
-                        <div class="workflow-number">
+                        <span class="step-number">
                             04
-                        </div>
+                        </span>
 
-                        <div>
-                            <strong>
-                                Engineering
-                            </strong>
-
-                            <span>
-                                Verification and protection
-                            </span>
-                        </div>
+                        <span class="step-title">
+                            Equipment
+                        </span>
 
                     </div>
 
 
-                    <div class="workflow-item">
+                    <div class="workflow-step">
 
-                        <div class="workflow-number">
+                        <span class="step-number">
                             05
-                        </div>
+                        </span>
 
-                        <div>
-                            <strong>
-                                Wiring Designer
-                            </strong>
-
-                            <span>
-                                Manual system layout
-                            </span>
-                        </div>
+                        <span class="step-title">
+                            Engineering Checks
+                        </span>
 
                     </div>
 
 
-                    <div class="workflow-item">
+                    <div class="workflow-step">
 
-                        <div class="workflow-number">
+                        <span class="step-number">
                             06
-                        </div>
+                        </span>
 
-                        <div>
-                            <strong>
-                                BOM & Costing
-                            </strong>
-
-                            <span>
-                                Materials and project cost
-                            </span>
-
-                        </div>
+                        <span class="step-title">
+                            Wiring Designer
+                        </span>
 
                     </div>
 
 
-                    <div class="workflow-item">
+                    <div class="workflow-step">
 
-                        <div class="workflow-number">
+                        <span class="step-number">
                             07
-                        </div>
+                        </span>
 
-                        <div>
-                            <strong>
-                                Installation
-                            </strong>
-
-                            <span>
-                                Build and installation tracking
-                            </span>
-
-                        </div>
+                        <span class="step-title">
+                            BOM & Costing
+                        </span>
 
                     </div>
 
 
-                    <div class="workflow-item">
+                    <div class="workflow-step">
 
-                        <div class="workflow-number">
+                        <span class="step-number">
                             08
-                        </div>
+                        </span>
 
-                        <div>
-                            <strong>
-                                Commissioning
-                            </strong>
-
-                            <span>
-                                Testing and completion
-                            </span>
-
-                        </div>
+                        <span class="step-title">
+                            Installation & Commissioning
+                        </span>
 
                     </div>
+
 
                 </div>
 
@@ -569,44 +1209,80 @@
         </main>
 
 
+
         <!-- =================================================
              FOOTER
-             ================================================= -->
+        ================================================== -->
 
         <footer class="footer">
 
-            <span>
+            <div>
+
                 SolarForge
-            </span>
 
-            <span>
-                Private Solar Business Workspace
-            </span>
+                <span class="footer-divider">
+                    •
+                </span>
 
-            <span id="app-version">
+                Private Engineering Workspace
+
+            </div>
+
+
+            <div>
+
+                <span id="storageStatus">
+                    Initializing local database...
+                </span>
+
+                <span class="footer-divider">
+                    •
+                </span>
+
                 v1.0.0
-            </span>
+
+            </div>
 
         </footer>
-
 
     </div>
 
 
-    <!-- =====================================================
-         APPLICATION SCRIPTS
-         ===================================================== -->
-
-    <script src="app/project.js"></script>
-
-    <script src="app/storage.js"></script>
-
-    <script src="app/app.js"></script>
-
 
     <!-- =====================================================
-         PAGE CONTROLLER
-         ===================================================== -->
+         SOLARFORGE CORE MODULES
+
+         LOAD ORDER IS IMPORTANT:
+
+         project.js
+             ↓
+         storage.js
+             ↓
+         app.js
+    ====================================================== -->
+
+    <script
+        src="app/project.js"
+        defer
+    ></script>
+
+
+    <script
+        src="app/storage.js"
+        defer
+    ></script>
+
+
+    <script
+        src="app/app.js"
+        defer
+    ></script>
+
+
+
+    <!-- =====================================================
+         APPLICATION CONTROLLER
+    ====================================================== -->
 
     <script>
 
@@ -614,359 +1290,305 @@
             "DOMContentLoaded",
             async function () {
 
+                const splash =
+                    document.getElementById(
+                        "solarforgeSplash"
+                    );
+
+
+                const app =
+                    document.getElementById(
+                        "app"
+                    );
+
+
                 try {
 
-                    await SolarForgeApp.init();
+                    /*
+                     * Verify core modules.
+                     */
 
-                    initializeSolarForgeHome();
+                    if (
+                        typeof window.SolarForgeProject ===
+                        "undefined"
+                    ) {
 
-                } catch (error) {
+                        throw new Error(
+                            "The SolarForge project module could not be loaded."
+                        );
+
+                    }
+
+
+                    if (
+                        typeof window.SolarForgeStorage ===
+                        "undefined"
+                    ) {
+
+                        throw new Error(
+                            "The SolarForge storage module could not be loaded."
+                        );
+
+                    }
+
+
+                    if (
+                        typeof window.SolarForgeApp ===
+                        "undefined"
+                    ) {
+
+                        throw new Error(
+                            "The SolarForge application module could not be loaded."
+                        );
+
+                    }
+
+
+                    /*
+                     * Initialize the application while
+                     * the splash screen is visible.
+                     */
+
+                    await window.SolarForgeApp.init();
+
+
+                    /*
+                     * Initialize Home.
+                     */
+
+                    await initializeHome();
+
+
+                    /*
+                     * Make the actual application visible.
+                     */
+
+                    if (app) {
+
+                        app.style.visibility =
+                            "visible";
+
+                    }
+
+
+                    /*
+                     * Give the startup animation enough
+                     * time to complete naturally.
+                     */
+
+                    window.setTimeout(
+                        function () {
+
+                            if (splash) {
+
+                                splash.classList.add(
+                                    "hidden"
+                                );
+
+                            }
+
+                        },
+                        2800
+                    );
+
+
+                }
+                catch (error) {
 
                     console.error(
-                        "SolarForge initialization error:",
+                        "SolarForge startup error:",
                         error
                     );
 
-                    showApplicationError(
-                        error.message
+
+                    /*
+                     * Show the application immediately
+                     * if startup fails.
+                     */
+
+                    if (app) {
+
+                        app.style.visibility =
+                            "visible";
+
+                    }
+
+
+                    /*
+                     * Remove the startup animation
+                     * immediately on an error.
+                     */
+
+                    if (splash) {
+
+                        splash.classList.add(
+                            "hidden"
+                        );
+
+                    }
+
+
+                    showStartupError(
+                        error
                     );
+
                 }
 
             }
         );
 
 
-        // ====================================================
-        // HOME PAGE INITIALIZATION
-        // ====================================================
 
-        async function initializeSolarForgeHome() {
+        /* =================================================
+           HOME INITIALIZATION
+        ================================================== */
 
-            updateStorageStatus();
+        async function initializeHome() {
 
-            await updateCurrentProject();
+            setupButtons();
+
+            await updateActiveProject();
 
             await updateProjectLibrary();
 
+            updateStorageStatus();
 
-            // -----------------------------------------------
-            // Start Project
-            // -----------------------------------------------
+        }
+
+
+
+        /* =================================================
+           BUTTONS
+        ================================================== */
+
+        function setupButtons() {
 
             const startButton =
                 document.getElementById(
-                    "start-project-button"
+                    "startProjectButton"
                 );
+
+
+            const openButton =
+                document.getElementById(
+                    "openProjectButton"
+                );
+
+
+            const continueButton =
+                document.getElementById(
+                    "continueProjectButton"
+                );
+
+
+            const closeButton =
+                document.getElementById(
+                    "closeProjectButton"
+                );
+
 
             if (startButton) {
 
                 startButton.addEventListener(
                     "click",
-                    handleStartProject
+                    startProject
                 );
+
             }
 
-
-            // -----------------------------------------------
-            // Open Project
-            // -----------------------------------------------
-
-            const openButton =
-                document.getElementById(
-                    "open-project-button"
-                );
 
             if (openButton) {
 
                 openButton.addEventListener(
                     "click",
-                    handleOpenProjects
+                    openProject
                 );
+
             }
 
-
-            // -----------------------------------------------
-            // Close Project
-            // -----------------------------------------------
-
-            const closeButton =
-                document.getElementById(
-                    "close-project-button"
-                );
-
-            if (closeButton) {
-
-                closeButton.addEventListener(
-                    "click",
-                    handleCloseProject
-                );
-            }
-
-
-            // -----------------------------------------------
-            // Continue Project
-            // -----------------------------------------------
-
-            const continueButton =
-                document.getElementById(
-                    "continue-project-button"
-                );
 
             if (continueButton) {
 
                 continueButton.addEventListener(
                     "click",
-                    handleContinueProject
+                    continueProject
                 );
+
             }
 
 
-            // -----------------------------------------------
-            // Refresh Projects
-            // -----------------------------------------------
+            if (closeButton) {
 
-            const refreshButton =
-                document.getElementById(
-                    "refresh-projects-button"
-                );
-
-            if (refreshButton) {
-
-                refreshButton.addEventListener(
+                closeButton.addEventListener(
                     "click",
-                    updateProjectLibrary
+                    closeProject
                 );
+
             }
 
         }
 
 
-        // ====================================================
-        // START NEW PROJECT
-        // ====================================================
 
-        async function handleStartProject() {
+        /* =================================================
+           START PROJECT
+        ================================================== */
+
+        async function startProject() {
 
             try {
 
                 const project =
-                    await SolarForgeApp.createNewProject();
+                    await window.SolarForgeApp
+                        .createNewProject();
 
 
-                updateStorageStatus();
-
-                await updateCurrentProject();
+                await updateActiveProject();
 
                 await updateProjectLibrary();
 
 
                 alert(
-                    "New SolarForge project created."
+                    "SolarForge project created.\n\n" +
+                    "Project Number: " +
+                    (
+                        project.project.projectNumber ||
+                        "—"
+                    )
                 );
 
 
-                console.log(
-                    "New project:",
-                    project
-                );
-
-            } catch (error) {
+            }
+            catch (error) {
 
                 console.error(
-                    "Unable to create project:",
+                    "Create project error:",
                     error
                 );
 
-                showApplicationError(
+
+                alert(
+                    "Unable to create the project.\n\n" +
                     error.message
                 );
+
             }
+
         }
 
 
-        // ====================================================
-        // OPEN PROJECT LIBRARY
-        // ====================================================
 
-        async function handleOpenProjects() {
+        /* =================================================
+           OPEN PROJECT
+        ================================================== */
 
-            const librarySection =
-                document.getElementById(
-                    "library-section"
-                );
-
-            if (!librarySection) {
-
-                return;
-            }
-
-
-            librarySection.classList.remove(
-                "hidden"
-            );
-
-
-            librarySection.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-
-
-            await updateProjectLibrary();
-        }
-
-
-        // ====================================================
-        // CLOSE CURRENT PROJECT
-        // ====================================================
-
-        async function handleCloseProject() {
-
-            SolarForgeApp.closeCurrentProject();
-
-            await updateCurrentProject();
-
-            updateStorageStatus();
-        }
-
-
-        // ====================================================
-        // CONTINUE CURRENT PROJECT
-        // ====================================================
-
-        function handleContinueProject() {
-
-            const project =
-                SolarForgeApp.getCurrentProject();
-
-
-            if (!project) {
-
-                return;
-            }
-
-
-            alert(
-                "The project workspace will be connected " +
-                "in the next SolarForge development step."
-            );
-        }
-
-
-        // ====================================================
-        // UPDATE CURRENT PROJECT CARD
-        // ====================================================
-
-        async function updateCurrentProject() {
-
-            const project =
-                SolarForgeApp.getCurrentProject();
-
-
-            const projectSection =
-                document.getElementById(
-                    "project-section"
-                );
-
-
-            if (!projectSection) {
-
-                return;
-            }
-
-
-            if (!project) {
-
-                projectSection.classList.add(
-                    "hidden"
-                );
-
-                return;
-            }
-
-
-            projectSection.classList.remove(
-                "hidden"
-            );
-
-
-            const projectTitle =
-                document.getElementById(
-                    "project-title"
-                );
-
-            const projectNumber =
-                document.getElementById(
-                    "project-number"
-                );
-
-            const projectStatus =
-                document.getElementById(
-                    "project-status"
-                );
-
-            const projectRevision =
-                document.getElementById(
-                    "project-revision"
-                );
-
-            const projectUpdated =
-                document.getElementById(
-                    "project-updated"
-                );
-
-
-            projectTitle.textContent =
-                project.project.name ||
-                "Untitled Solar Project";
-
-
-            projectNumber.textContent =
-                project.project.projectNumber ||
-                project.project.id ||
-                "—";
-
-
-            projectStatus.textContent =
-                formatProjectStatus(
-                    project.project.status
-                );
-
-
-            projectRevision.textContent =
-                project.project.revision ??
-                "—";
-
-
-            projectUpdated.textContent =
-                formatDate(
-                    project.project.updatedAt
-                );
-        }
-
-
-        // ====================================================
-        // UPDATE PROJECT LIBRARY
-        // ====================================================
-
-        async function updateProjectLibrary() {
-
-            const projectList =
-                document.getElementById(
-                    "project-list"
-                );
-
-
-            if (!projectList) {
-
-                return;
-            }
-
+        async function openProject() {
 
             try {
 
                 const projects =
-                    await SolarForgeApp.getProjects();
+                    await window.SolarForgeApp
+                        .getProjects();
 
 
                 if (
@@ -974,339 +1596,494 @@
                     projects.length === 0
                 ) {
 
-                    projectList.innerHTML = `
-
-                        <div class="empty-state">
-
-                            <div class="empty-icon">
-                                ◫
-                            </div>
-
-                            <h3>
-                                No projects yet
-                            </h3>
-
-                            <p>
-                                Start your first SolarForge
-                                project to see it here.
-                            </p>
-
-                        </div>
-
-                    `;
+                    alert(
+                        "There are no saved SolarForge projects yet."
+                    );
 
                     return;
+
                 }
 
 
-                projectList.innerHTML = "";
+                await window.SolarForgeApp
+                    .loadProject(
+                        projects[0].project.id
+                    );
 
 
-                projects.forEach(
-                    function (project) {
+                await updateActiveProject();
 
-                        const card =
-                            createProjectListItem(
-                                project
-                            );
+                await updateProjectLibrary();
 
-                        projectList.appendChild(
-                            card
-                        );
-
-                    }
-                );
-
-            } catch (error) {
+            }
+            catch (error) {
 
                 console.error(
-                    "Unable to load project library:",
+                    "Open project error:",
                     error
                 );
 
-                projectList.innerHTML = `
 
-                    <div class="empty-state">
+                alert(
+                    "Unable to open the project.\n\n" +
+                    error.message
+                );
+
+            }
+
+        }
+
+
+
+        /* =================================================
+           CONTINUE PROJECT
+        ================================================== */
+
+        function continueProject() {
+
+            const project =
+                window.SolarForgeApp
+                    .getCurrentProject();
+
+
+            if (!project) {
+
+                alert(
+                    "There is no active project."
+                );
+
+                return;
+
+            }
+
+
+            alert(
+                "Project Workspace\n\n" +
+                (
+                    project.project.name ||
+                    "Solar Project"
+                ) +
+                "\n\n" +
+                "The engineering workspace will be connected next."
+            );
+
+        }
+
+
+
+        /* =================================================
+           CLOSE PROJECT
+        ================================================== */
+
+        async function closeProject() {
+
+            window.SolarForgeApp
+                .closeCurrentProject();
+
+
+            await updateActiveProject();
+
+        }
+
+
+
+        /* =================================================
+           ACTIVE PROJECT
+        ================================================== */
+
+        async function updateActiveProject() {
+
+            const section =
+                document.getElementById(
+                    "activeProjectSection"
+                );
+
+
+            if (!section) {
+                return;
+            }
+
+
+            const project =
+                window.SolarForgeApp
+                    .getCurrentProject();
+
+
+            if (!project) {
+
+                section.classList.add(
+                    "hidden"
+                );
+
+                return;
+
+            }
+
+
+            section.classList.remove(
+                "hidden"
+            );
+
+
+            const data =
+                project.project || {};
+
+
+            setText(
+                "activeProjectName",
+                data.name ||
+                "New Solar Project"
+            );
+
+
+            setText(
+                "activeProjectNumber",
+                data.projectNumber ||
+                "—"
+            );
+
+
+            setText(
+                "activeProjectStatus",
+                formatStatus(
+                    data.status
+                )
+            );
+
+
+            setText(
+                "activeProjectRevision",
+                "Rev. " +
+                (
+                    data.revision ||
+                    1
+                )
+            );
+
+
+            setText(
+                "activeProjectUpdated",
+                formatDate(
+                    data.updatedAt
+                )
+            );
+
+        }
+
+
+
+        /* =================================================
+           PROJECT LIBRARY
+        ================================================== */
+
+        async function updateProjectLibrary() {
+
+            const container =
+                document.getElementById(
+                    "projectLibrary"
+                );
+
+
+            const count =
+                document.getElementById(
+                    "projectCount"
+                );
+
+
+            if (!container) {
+                return;
+            }
+
+
+            const projects =
+                await window.SolarForgeApp
+                    .getProjects();
+
+
+            if (count) {
+
+                count.textContent =
+                    projects.length +
+                    (
+                        projects.length === 1
+                            ? " Project"
+                            : " Projects"
+                    );
+
+            }
+
+
+            if (
+                !projects ||
+                projects.length === 0
+            ) {
+
+                container.innerHTML = `
+
+                    <div class="empty-library">
+
+                        <div class="empty-icon">
+                            ☀
+                        </div>
 
                         <h3>
-                            Unable to load projects
+                            No projects yet
                         </h3>
 
                         <p>
-                            ${escapeHtml(
-                                error.message
-                            )}
+                            Start your first solar system
+                            design project to begin.
                         </p>
 
                     </div>
 
                 `;
+
+                return;
+
             }
+
+
+            container.innerHTML =
+                projects
+                    .map(
+                        createProjectCard
+                    )
+                    .join("");
+
+
+            container
+                .querySelectorAll(
+                    "[data-project-id]"
+                )
+                .forEach(
+                    function (card) {
+
+                        card.addEventListener(
+                            "click",
+                            async function () {
+
+                                await loadProjectById(
+                                    card.dataset.projectId
+                                );
+
+                            }
+                        );
+
+                    }
+                );
+
         }
 
 
-        // ====================================================
-        // CREATE PROJECT LIBRARY ITEM
-        // ====================================================
 
-        function createProjectListItem(project) {
+        /* =================================================
+           PROJECT CARD
+        ================================================== */
 
-            const card =
-                document.createElement(
-                    "div"
+        function createProjectCard(
+            project
+        ) {
+
+            const data =
+                project.project || {};
+
+
+            const id =
+                escapeHtml(
+                    data.id || ""
                 );
 
 
-            card.className =
-                "project-list-item";
-
-
             const name =
-                project.project.name ||
-                "Untitled Solar Project";
+                escapeHtml(
+                    data.name ||
+                    "New Solar Project"
+                );
 
 
             const number =
-                project.project.projectNumber ||
-                project.project.id ||
-                "No project number";
+                escapeHtml(
+                    data.projectNumber ||
+                    "No project number"
+                );
 
 
             const status =
-                formatProjectStatus(
-                    project.project.status
+                escapeHtml(
+                    formatStatus(
+                        data.status
+                    )
                 );
 
 
             const updated =
-                formatDate(
-                    project.project.updatedAt
+                escapeHtml(
+                    formatDate(
+                        data.updatedAt
+                    )
                 );
 
 
-            card.innerHTML = `
+            return `
 
-                <div class="project-list-info">
+                <button
+                    type="button"
+                    class="project-card"
+                    data-project-id="${id}"
+                >
 
-                    <div class="project-list-name">
-                        ${escapeHtml(name)}
+                    <div class="project-card-main">
+
+                        <div class="project-card-icon">
+                            ☀
+                        </div>
+
+
+                        <div class="project-card-info">
+
+                            <h3>
+                                ${name}
+                            </h3>
+
+                            <p>
+                                ${number}
+                            </p>
+
+                        </div>
+
                     </div>
 
-                    <div class="project-list-meta">
-                        ${escapeHtml(number)}
+
+                    <div class="project-card-meta">
+
+                        <span class="project-status">
+                            ${status}
+                        </span>
+
+                        <span class="project-date">
+                            ${updated}
+                        </span>
+
                     </div>
 
-                </div>
-
-                <div class="project-list-status">
-
-                    <span class="project-status-badge">
-                        ${escapeHtml(status)}
-                    </span>
-
-                    <span class="project-list-date">
-                        ${escapeHtml(updated)}
-                    </span>
-
-                </div>
-
-                <div class="project-list-actions">
-
-                    <button
-                        class="small-button open-project-item"
-                        type="button"
-                    >
-                        Open
-                    </button>
-
-                    <button
-                        class="small-button delete-project-item"
-                        type="button"
-                    >
-                        Delete
-                    </button>
-
-                </div>
+                </button>
 
             `;
 
-
-            const openButton =
-                card.querySelector(
-                    ".open-project-item"
-                );
-
-
-            const deleteButton =
-                card.querySelector(
-                    ".delete-project-item"
-                );
-
-
-            openButton.addEventListener(
-                "click",
-                async function () {
-
-                    try {
-
-                        await SolarForgeApp.loadProject(
-                            project.project.id
-                        );
-
-
-                        await updateCurrentProject();
-
-                        updateStorageStatus();
-
-
-                        document
-                            .getElementById(
-                                "project-section"
-                            )
-                            .scrollIntoView({
-                                behavior: "smooth",
-                                block: "start"
-                            });
-
-                    } catch (error) {
-
-                        showApplicationError(
-                            error.message
-                        );
-                    }
-
-                }
-            );
-
-
-            deleteButton.addEventListener(
-                "click",
-                async function () {
-
-                    const confirmed =
-                        confirm(
-                            "Delete this SolarForge project?"
-                        );
-
-
-                    if (!confirmed) {
-
-                        return;
-                    }
-
-
-                    try {
-
-                        await SolarForgeApp.deleteProject(
-                            project.project.id
-                        );
-
-
-                        await updateCurrentProject();
-
-                        await updateProjectLibrary();
-
-                        updateStorageStatus();
-
-                    } catch (error) {
-
-                        showApplicationError(
-                            error.message
-                        );
-                    }
-
-                }
-            );
-
-
-            return card;
         }
 
 
-        // ====================================================
-        // UPDATE STORAGE STATUS
-        // ====================================================
 
-        function updateStorageStatus() {
+        /* =================================================
+           LOAD PROJECT
+        ================================================== */
 
-            const statusElement =
-                document.getElementById(
-                    "storage-status"
+        async function loadProjectById(
+            projectId
+        ) {
+
+            try {
+
+                await window.SolarForgeApp
+                    .loadProject(
+                        projectId
+                    );
+
+
+                await updateActiveProject();
+
+                await updateProjectLibrary();
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Load project error:",
+                    error
                 );
 
 
-            if (!statusElement) {
+                alert(
+                    "Unable to load the project.\n\n" +
+                    error.message
+                );
 
+            }
+
+        }
+
+
+
+        /* =================================================
+           STORAGE STATUS
+        ================================================== */
+
+        function updateStorageStatus() {
+
+            const element =
+                document.getElementById(
+                    "storageStatus"
+                );
+
+
+            if (!element) {
                 return;
             }
 
 
-            if (
-                SolarForgeStorage &&
-                SolarForgeStorage.database
-            ) {
+            element.textContent =
+                "Local database ready";
 
-                statusElement.innerHTML = `
-
-                    <span class="status-dot"></span>
-
-                    <span>
-                        Offline Ready
-                    </span>
-
-                `;
-
-            } else {
-
-                statusElement.innerHTML = `
-
-                    <span class="status-dot warning"></span>
-
-                    <span>
-                        Storage Starting
-                    </span>
-
-                `;
-            }
         }
 
 
-        // ====================================================
-        // FORMAT PROJECT STATUS
-        // ====================================================
 
-        function formatProjectStatus(status) {
+        /* =================================================
+           TEXT HELPER
+        ================================================== */
 
-            if (!status) {
+        function setText(
+            id,
+            value
+        ) {
 
-                return "New";
+            const element =
+                document.getElementById(
+                    id
+                );
+
+
+            if (element) {
+
+                element.textContent =
+                    value;
+
             }
 
-
-            return String(status)
-                .replace(/_/g, " ")
-                .replace(/\b\w/g, function (letter) {
-
-                    return letter.toUpperCase();
-
-                });
         }
 
 
-        // ====================================================
-        // FORMAT DATE
-        // ====================================================
 
-        function formatDate(value) {
+        /* =================================================
+           DATE FORMAT
+        ================================================== */
+
+        function formatDate(
+            value
+        ) {
 
             if (!value) {
 
                 return "—";
+
             }
 
 
             const date =
-                new Date(value);
+                new Date(
+                    value
+                );
 
 
             if (
@@ -1316,6 +2093,7 @@
             ) {
 
                 return "—";
+
             }
 
 
@@ -1325,46 +2103,179 @@
                     year: "numeric",
                     month: "short",
                     day: "numeric",
-                    hour: "2-digit",
+                    hour: "numeric",
                     minute: "2-digit"
                 }
             );
+
         }
 
 
-        // ====================================================
-        // ESCAPE HTML
-        // ====================================================
 
-        function escapeHtml(value) {
+        /* =================================================
+           STATUS FORMAT
+        ================================================== */
+
+        function formatStatus(
+            status
+        ) {
+
+            if (!status) {
+
+                return "New";
+
+            }
+
+
+            return String(status)
+
+                .replace(
+                    /[_-]+/g,
+                    " "
+                )
+
+                .replace(
+                    /\b\w/g,
+                    function (letter) {
+
+                        return letter.toUpperCase();
+
+                    }
+                );
+
+        }
+
+
+
+        /* =================================================
+           HTML ESCAPE
+        ================================================== */
+
+        function escapeHtml(
+            value
+        ) {
 
             return String(value)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+
         }
 
 
-        // ====================================================
-        // APPLICATION ERROR
-        // ====================================================
 
-        function showApplicationError(message) {
+        /* =================================================
+           STARTUP ERROR
+           
+           IMPORTANT:
+           NO ANIMATION HERE.
+        ================================================== */
 
-            console.error(
-                message
-            );
+        function showStartupError(
+            error
+        ) {
+
+            const message =
+                error &&
+                error.message
+                    ? error.message
+                    : "Unknown startup error.";
 
 
-            alert(
-                "SolarForge Error\n\n" +
-                message
-            );
+            document.body.innerHTML = `
+
+                <div
+                    style="
+                        width:100%;
+                        height:100dvh;
+                        min-height:100vh;
+                        box-sizing:border-box;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        padding:24px;
+                        background:#07111f;
+                        color:#ffffff;
+                        font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+                    "
+                >
+
+                    <div
+                        style="
+                            width:min(600px,100%);
+                            box-sizing:border-box;
+                            padding:32px;
+                            border-radius:18px;
+                            background:#0d1a2b;
+                            border:1px solid rgba(255,255,255,.10);
+                        "
+                    >
+
+                        <div
+                            style="
+                                color:#4da3ff;
+                                font-size:12px;
+                                font-weight:700;
+                                letter-spacing:2px;
+                                margin-bottom:14px;
+                            "
+                        >
+                            SOLARFORGE
+                        </div>
+
+
+                        <h1
+                            style="
+                                margin:0 0 14px;
+                                font-size:28px;
+                            "
+                        >
+                            Application Error
+                        </h1>
+
+
+                        <p
+                            style="
+                                margin:0;
+                                color:#aebed0;
+                                line-height:1.6;
+                            "
+                        >
+                            ${escapeHtml(message)}
+                        </p>
+
+                    </div>
+
+                </div>
+
+            `;
+
         }
 
     </script>
+
 
 </body>
 
