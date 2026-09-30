@@ -1,739 +1,896 @@
-// ============================================================
-// SOLARFORGE
-// Offline Project Storage
-// ============================================================
-//
-// This module provides local offline storage for SolarForge.
-//
-// Storage technology:
-// - IndexedDB
-//
-// This allows SolarForge to store complete projects locally
-// on the device without requiring an internet connection.
-//
-// ============================================================
+/* =========================================================
+   SOLARFORGE OFFLINE STORAGE
+   IndexedDB Project Database
+   ========================================================= */
 
-const SolarForgeStorage = {
+(function () {
 
-    // --------------------------------------------------------
-    // Database configuration
-    // --------------------------------------------------------
-
-    databaseName: "SolarForgeDB",
-
-    databaseVersion: 1,
-
-    projectStoreName: "projects",
-
-    database: null,
+    "use strict";
 
 
-    // --------------------------------------------------------
-    // Initialize the database
-    // --------------------------------------------------------
+    /* =====================================================
+       DATABASE SETTINGS
+    ====================================================== */
 
-    async init() {
+    const DB_NAME =
+        "SolarForgeDB";
 
-        if (this.database) {
+    const DB_VERSION =
+        1;
 
-            return this.database;
-        }
-
-        if (!window.indexedDB) {
-
-            throw new Error(
-                "IndexedDB is not supported by this browser."
-            );
-        }
-
-        return new Promise((resolve, reject) => {
-
-            const request = indexedDB.open(
-                this.databaseName,
-                this.databaseVersion
-            );
+    const STORE_NAME =
+        "projects";
 
 
-            // ------------------------------------------------
-            // Database creation / upgrade
-            // ------------------------------------------------
+    /* =====================================================
+       STORAGE OBJECT
+    ====================================================== */
 
-            request.onupgradeneeded = (event) => {
-
-                const database = event.target.result;
+    const SolarForgeStorage = {
 
 
-                // --------------------------------------------
-                // Create project store
-                // --------------------------------------------
+        db: null,
 
-                if (
-                    !database.objectStoreNames.contains(
-                        this.projectStoreName
-                    )
+        initialized: false,
+
+
+        /* =================================================
+           INITIALIZE
+        ================================================== */
+
+        init: function () {
+
+            const self = this;
+
+
+            return new Promise(
+                function (
+                    resolve,
+                    reject
                 ) {
 
-                    const projectStore =
-                        database.createObjectStore(
-                            this.projectStoreName,
-                            {
-                                keyPath: "project.id"
-                            }
+                    if (
+                        self.initialized &&
+                        self.db
+                    ) {
+
+                        resolve(
+                            self.db
+                        );
+
+                        return;
+
+                    }
+
+
+                    if (
+                        !window.indexedDB
+                    ) {
+
+                        reject(
+                            new Error(
+                                "IndexedDB is not supported by this browser."
+                            )
+                        );
+
+                        return;
+
+                    }
+
+
+                    const request =
+                        indexedDB.open(
+                            DB_NAME,
+                            DB_VERSION
                         );
 
 
-                    // ----------------------------------------
-                    // Indexes
-                    // ----------------------------------------
+                    request.onupgradeneeded =
+                        function (event) {
 
-                    projectStore.createIndex(
-                        "projectName",
-                        "project.name",
-                        {
-                            unique: false
-                        }
-                    );
+                            const db =
+                                event.target.result;
 
-                    projectStore.createIndex(
-                        "status",
-                        "project.status",
-                        {
-                            unique: false
-                        }
-                    );
 
-                    projectStore.createIndex(
-                        "updatedAt",
-                        "project.updatedAt",
-                        {
-                            unique: false
-                        }
-                    );
+                            let store;
+
+
+                            if (
+                                !db.objectStoreNames.contains(
+                                    STORE_NAME
+                                )
+                            ) {
+
+                                store =
+                                    db.createObjectStore(
+                                        STORE_NAME,
+                                        {
+                                            keyPath:
+                                                "project.id"
+                                        }
+                                    );
+
+                            } else {
+
+                                store =
+                                    event.target.transaction.objectStore(
+                                        STORE_NAME
+                                    );
+
+                            }
+
+
+                            if (
+                                !store.indexNames.contains(
+                                    "projectName"
+                                )
+                            ) {
+
+                                store.createIndex(
+                                    "projectName",
+                                    "project.name",
+                                    {
+                                        unique: false
+                                    }
+                                );
+
+                            }
+
+
+                            if (
+                                !store.indexNames.contains(
+                                    "projectStatus"
+                                )
+                            ) {
+
+                                store.createIndex(
+                                    "projectStatus",
+                                    "project.status",
+                                    {
+                                        unique: false
+                                    }
+                                );
+
+                            }
+
+
+                            if (
+                                !store.indexNames.contains(
+                                    "projectUpdatedAt"
+                                )
+                            ) {
+
+                                store.createIndex(
+                                    "projectUpdatedAt",
+                                    "project.updatedAt",
+                                    {
+                                        unique: false
+                                    }
+                                );
+
+                            }
+
+                        };
+
+
+                    request.onsuccess =
+                        function (event) {
+
+                            self.db =
+                                event.target.result;
+
+
+                            self.initialized =
+                                true;
+
+
+                            self.db.onversionchange =
+                                function () {
+
+                                    self.db.close();
+
+                                    self.db =
+                                        null;
+
+                                    self.initialized =
+                                        false;
+
+                                };
+
+
+                            console.log(
+                                "SolarForge IndexedDB initialized."
+                            );
+
+
+                            resolve(
+                                self.db
+                            );
+
+                        };
+
+
+                    request.onerror =
+                        function () {
+
+                            reject(
+                                new Error(
+                                    "Unable to open SolarForge local database."
+                                )
+                            );
+
+                        };
+
                 }
-            };
-
-
-            // ------------------------------------------------
-            // Database successfully opened
-            // ------------------------------------------------
-
-            request.onsuccess = (event) => {
-
-                this.database =
-                    event.target.result;
-
-                this.database.onversionchange = () => {
-
-                    this.database.close();
-
-                    this.database = null;
-                };
-
-                resolve(this.database);
-            };
-
-
-            // ------------------------------------------------
-            // Database error
-            // ------------------------------------------------
-
-            request.onerror = () => {
-
-                reject(
-                    new Error(
-                        "Unable to open SolarForge offline database."
-                    )
-                );
-            };
-
-
-            // ------------------------------------------------
-            // Database blocked
-            // ------------------------------------------------
-
-            request.onblocked = () => {
-
-                reject(
-                    new Error(
-                        "SolarForge database upgrade is blocked. " +
-                        "Please close other SolarForge tabs and try again."
-                    )
-                );
-            };
-
-        });
-    },
-
-
-    // --------------------------------------------------------
-    // Save a project
-    // --------------------------------------------------------
-
-    async saveProject(project) {
-
-        if (!project) {
-
-            throw new Error(
-                "Cannot save an empty SolarForge project."
             );
-        }
+
+        },
 
 
-        // --------------------------------------------
-        // Validate using Project Data Model
-        // --------------------------------------------
+        /* =================================================
+           ENSURE DATABASE
+        ================================================== */
 
-        if (
-            window.SolarForgeProject &&
-            typeof SolarForgeProject.validate === "function"
+        ensureInitialized: async function () {
+
+            if (
+                !this.initialized ||
+                !this.db
+            ) {
+
+                await this.init();
+
+            }
+
+
+            return this.db;
+
+        },
+
+
+        /* =================================================
+           SAVE PROJECT
+        ================================================== */
+
+        saveProject: async function (
+            project
         ) {
 
+            await this.ensureInitialized();
+
+
+            if (
+                !window.SolarForgeProject
+            ) {
+
+                throw new Error(
+                    "SolarForgeProject is not available."
+                );
+
+            }
+
+
             const validation =
-                SolarForgeProject.validate(project);
+                window.SolarForgeProject.validate(
+                    project
+                );
+
 
             if (!validation.valid) {
 
                 throw new Error(
-                    "Invalid SolarForge project: " +
                     validation.errors.join(" ")
                 );
+
             }
-        }
 
 
-        // --------------------------------------------
-        // Update timestamp
-        // --------------------------------------------
+            window.SolarForgeProject.touch(
+                project
+            );
 
-        if (
-            window.SolarForgeProject &&
-            typeof SolarForgeProject.touch === "function"
+
+            const self = this;
+
+
+            return new Promise(
+                function (
+                    resolve,
+                    reject
+                ) {
+
+                    const transaction =
+                        self.db.transaction(
+                            [STORE_NAME],
+                            "readwrite"
+                        );
+
+
+                    const store =
+                        transaction.objectStore(
+                            STORE_NAME
+                        );
+
+
+                    const request =
+                        store.put(
+                            project
+                        );
+
+
+                    request.onsuccess =
+                        function () {
+
+                            resolve(
+                                project
+                            );
+
+                        };
+
+
+                    request.onerror =
+                        function () {
+
+                            reject(
+                                new Error(
+                                    "Unable to save project."
+                                )
+                            );
+
+                        };
+
+                }
+            );
+
+        },
+
+
+        /* =================================================
+           LOAD PROJECT
+        ================================================== */
+
+        loadProject: async function (
+            projectId
         ) {
 
-            SolarForgeProject.touch(project);
+            await this.ensureInitialized();
 
-        } else if (
-            project.project
+
+            const self = this;
+
+
+            return new Promise(
+                function (
+                    resolve,
+                    reject
+                ) {
+
+                    const transaction =
+                        self.db.transaction(
+                            [STORE_NAME],
+                            "readonly"
+                        );
+
+
+                    const store =
+                        transaction.objectStore(
+                            STORE_NAME
+                        );
+
+
+                    const request =
+                        store.get(
+                            projectId
+                        );
+
+
+                    request.onsuccess =
+                        function () {
+
+                            resolve(
+                                request.result ||
+                                null
+                            );
+
+                        };
+
+
+                    request.onerror =
+                        function () {
+
+                            reject(
+                                new Error(
+                                    "Unable to load project."
+                                )
+                            );
+
+                        };
+
+                }
+            );
+
+        },
+
+
+        /* =================================================
+           GET ALL PROJECTS
+        ================================================== */
+
+        getAllProjects: async function () {
+
+            await this.ensureInitialized();
+
+
+            const self = this;
+
+
+            return new Promise(
+                function (
+                    resolve,
+                    reject
+                ) {
+
+                    const transaction =
+                        self.db.transaction(
+                            [STORE_NAME],
+                            "readonly"
+                        );
+
+
+                    const store =
+                        transaction.objectStore(
+                            STORE_NAME
+                        );
+
+
+                    const request =
+                        store.getAll();
+
+
+                    request.onsuccess =
+                        function () {
+
+                            const projects =
+                                request.result ||
+                                [];
+
+
+                            projects.sort(
+                                function (
+                                    a,
+                                    b
+                                ) {
+
+                                    const dateA =
+                                        new Date(
+                                            a?.project?.updatedAt ||
+                                            0
+                                        ).getTime();
+
+
+                                    const dateB =
+                                        new Date(
+                                            b?.project?.updatedAt ||
+                                            0
+                                        ).getTime();
+
+
+                                    return dateB - dateA;
+
+                                }
+                            );
+
+
+                            resolve(
+                                projects
+                            );
+
+                        };
+
+
+                    request.onerror =
+                        function () {
+
+                            reject(
+                                new Error(
+                                    "Unable to retrieve projects."
+                                )
+                            );
+
+                        };
+
+                }
+            );
+
+        },
+
+
+        /* =================================================
+           DELETE PROJECT
+        ================================================== */
+
+        deleteProject: async function (
+            projectId
         ) {
 
-            project.project.updatedAt =
-                new Date().toISOString();
-        }
+            await this.ensureInitialized();
 
 
-        const database =
-            await this.init();
+            const self = this;
 
 
-        return new Promise((resolve, reject) => {
+            return new Promise(
+                function (
+                    resolve,
+                    reject
+                ) {
 
-            const transaction =
-                database.transaction(
-                    [this.projectStoreName],
-                    "readwrite"
-                );
-
-            const store =
-                transaction.objectStore(
-                    this.projectStoreName
-                );
-
-            const request =
-                store.put(project);
+                    const transaction =
+                        self.db.transaction(
+                            [STORE_NAME],
+                            "readwrite"
+                        );
 
 
-            request.onsuccess = () => {
-
-                resolve(project);
-            };
-
-
-            request.onerror = () => {
-
-                reject(
-                    new Error(
-                        "Unable to save SolarForge project."
-                    )
-                );
-            };
-        });
-    },
+                    const store =
+                        transaction.objectStore(
+                            STORE_NAME
+                        );
 
 
-    // --------------------------------------------------------
-    // Load a project by ID
-    // --------------------------------------------------------
+                    const request =
+                        store.delete(
+                            projectId
+                        );
 
-    async loadProject(projectId) {
 
-        if (!projectId) {
+                    request.onsuccess =
+                        function () {
 
-            throw new Error(
-                "Project ID is required."
+                            resolve(
+                                true
+                            );
+
+                        };
+
+
+                    request.onerror =
+                        function () {
+
+                            reject(
+                                new Error(
+                                    "Unable to delete project."
+                                )
+                            );
+
+                        };
+
+                }
             );
-        }
 
+        },
 
-        const database =
-            await this.init();
 
+        /* =================================================
+           PROJECT EXISTS
+        ================================================== */
 
-        return new Promise((resolve, reject) => {
-
-            const transaction =
-                database.transaction(
-                    [this.projectStoreName],
-                    "readonly"
-                );
-
-            const store =
-                transaction.objectStore(
-                    this.projectStoreName
-                );
-
-            const request =
-                store.get(projectId);
-
-
-            request.onsuccess = () => {
-
-                resolve(
-                    request.result || null
-                );
-            };
-
-
-            request.onerror = () => {
-
-                reject(
-                    new Error(
-                        "Unable to load SolarForge project."
-                    )
-                );
-            };
-        });
-    },
-
-
-    // --------------------------------------------------------
-    // Get all saved projects
-    // --------------------------------------------------------
-
-    async getAllProjects() {
-
-        const database =
-            await this.init();
-
-
-        return new Promise((resolve, reject) => {
-
-            const transaction =
-                database.transaction(
-                    [this.projectStoreName],
-                    "readonly"
-                );
-
-            const store =
-                transaction.objectStore(
-                    this.projectStoreName
-                );
-
-            const request =
-                store.getAll();
-
-
-            request.onsuccess = () => {
-
-                const projects =
-                    request.result || [];
-
-
-                // ----------------------------------------
-                // Sort newest updated project first
-                // ----------------------------------------
-
-                projects.sort((a, b) => {
-
-                    const dateA =
-                        new Date(
-                            a?.project?.updatedAt || 0
-                        ).getTime();
-
-                    const dateB =
-                        new Date(
-                            b?.project?.updatedAt || 0
-                        ).getTime();
-
-                    return dateB - dateA;
-                });
-
-
-                resolve(projects);
-            };
-
-
-            request.onerror = () => {
-
-                reject(
-                    new Error(
-                        "Unable to retrieve SolarForge projects."
-                    )
-                );
-            };
-        });
-    },
-
-
-    // --------------------------------------------------------
-    // Delete a project
-    // --------------------------------------------------------
-
-    async deleteProject(projectId) {
-
-        if (!projectId) {
-
-            throw new Error(
-                "Project ID is required."
-            );
-        }
-
-
-        const database =
-            await this.init();
-
-
-        return new Promise((resolve, reject) => {
-
-            const transaction =
-                database.transaction(
-                    [this.projectStoreName],
-                    "readwrite"
-                );
-
-            const store =
-                transaction.objectStore(
-                    this.projectStoreName
-                );
-
-            const request =
-                store.delete(projectId);
-
-
-            request.onsuccess = () => {
-
-                resolve(true);
-            };
-
-
-            request.onerror = () => {
-
-                reject(
-                    new Error(
-                        "Unable to delete SolarForge project."
-                    )
-                );
-            };
-        });
-    },
-
-
-    // --------------------------------------------------------
-    // Check if a project exists
-    // --------------------------------------------------------
-
-    async projectExists(projectId) {
-
-        if (!projectId) {
-
-            return false;
-        }
-
-
-        const database =
-            await this.init();
-
-
-        return new Promise((resolve, reject) => {
-
-            const transaction =
-                database.transaction(
-                    [this.projectStoreName],
-                    "readonly"
-                );
-
-            const store =
-                transaction.objectStore(
-                    this.projectStoreName
-                );
-
-            const request =
-                store.getKey(projectId);
-
-
-            request.onsuccess = () => {
-
-                resolve(
-                    request.result !== undefined
-                );
-            };
-
-
-            request.onerror = () => {
-
-                reject(
-                    new Error(
-                        "Unable to check SolarForge project."
-                    )
-                );
-            };
-        });
-    },
-
-
-    // --------------------------------------------------------
-    // Count saved projects
-    // --------------------------------------------------------
-
-    async countProjects() {
-
-        const database =
-            await this.init();
-
-
-        return new Promise((resolve, reject) => {
-
-            const transaction =
-                database.transaction(
-                    [this.projectStoreName],
-                    "readonly"
-                );
-
-            const store =
-                transaction.objectStore(
-                    this.projectStoreName
-                );
-
-            const request =
-                store.count();
-
-
-            request.onsuccess = () => {
-
-                resolve(
-                    request.result
-                );
-            };
-
-
-            request.onerror = () => {
-
-                reject(
-                    new Error(
-                        "Unable to count SolarForge projects."
-                    )
-                );
-            };
-        });
-    },
-
-
-    // --------------------------------------------------------
-    // Delete every saved project
-    // --------------------------------------------------------
-    //
-    // This is intended for future Settings / maintenance
-    // functionality.
-    //
-    // The UI should ask for confirmation before calling it.
-    //
-    // --------------------------------------------------------
-
-    async clearAllProjects() {
-
-        const database =
-            await this.init();
-
-
-        return new Promise((resolve, reject) => {
-
-            const transaction =
-                database.transaction(
-                    [this.projectStoreName],
-                    "readwrite"
-                );
-
-            const store =
-                transaction.objectStore(
-                    this.projectStoreName
-                );
-
-            const request =
-                store.clear();
-
-
-            request.onsuccess = () => {
-
-                resolve(true);
-            };
-
-
-            request.onerror = () => {
-
-                reject(
-                    new Error(
-                        "Unable to clear SolarForge projects."
-                    )
-                );
-            };
-        });
-    },
-
-
-    // --------------------------------------------------------
-    // Export a project as JSON
-    // --------------------------------------------------------
-    //
-    // This prepares a project for the future:
-    //
-    // Export Project
-    //       ↓
-    // SolarForge Project File
-    //       ↓
-    // Files app / backup
-    //
-    // --------------------------------------------------------
-
-    exportProject(project) {
-
-        if (!project) {
-
-            throw new Error(
-                "Cannot export an empty project."
-            );
-        }
-
-
-        return JSON.stringify(
-            project,
-            null,
-            2
-        );
-    },
-
-
-    // --------------------------------------------------------
-    // Import a project from JSON
-    // --------------------------------------------------------
-
-    importProject(jsonText) {
-
-        if (!jsonText) {
-
-            throw new Error(
-                "No project data was provided."
-            );
-        }
-
-
-        let project;
-
-
-        try {
-
-            project =
-                JSON.parse(jsonText);
-
-        } catch (error) {
-
-            throw new Error(
-                "The selected file is not valid JSON."
-            );
-        }
-
-
-        // --------------------------------------------
-        // Validate imported project
-        // --------------------------------------------
-
-        if (
-            window.SolarForgeProject &&
-            typeof SolarForgeProject.validate === "function"
+        projectExists: async function (
+            projectId
         ) {
+
+            const project =
+                await this.loadProject(
+                    projectId
+                );
+
+
+            return Boolean(
+                project
+            );
+
+        },
+
+
+        /* =================================================
+           COUNT PROJECTS
+        ================================================== */
+
+        countProjects: async function () {
+
+            await this.ensureInitialized();
+
+
+            const self = this;
+
+
+            return new Promise(
+                function (
+                    resolve,
+                    reject
+                ) {
+
+                    const transaction =
+                        self.db.transaction(
+                            [STORE_NAME],
+                            "readonly"
+                        );
+
+
+                    const store =
+                        transaction.objectStore(
+                            STORE_NAME
+                        );
+
+
+                    const request =
+                        store.count();
+
+
+                    request.onsuccess =
+                        function () {
+
+                            resolve(
+                                request.result
+                            );
+
+                        };
+
+
+                    request.onerror =
+                        function () {
+
+                            reject(
+                                new Error(
+                                    "Unable to count projects."
+                                )
+                            );
+
+                        };
+
+                }
+            );
+
+        },
+
+
+        /* =================================================
+           CLEAR ALL
+        ================================================== */
+
+        clearAllProjects: async function () {
+
+            await this.ensureInitialized();
+
+
+            const self = this;
+
+
+            return new Promise(
+                function (
+                    resolve,
+                    reject
+                ) {
+
+                    const transaction =
+                        self.db.transaction(
+                            [STORE_NAME],
+                            "readwrite"
+                        );
+
+
+                    const store =
+                        transaction.objectStore(
+                            STORE_NAME
+                        );
+
+
+                    const request =
+                        store.clear();
+
+
+                    request.onsuccess =
+                        function () {
+
+                            resolve(
+                                true
+                            );
+
+                        };
+
+
+                    request.onerror =
+                        function () {
+
+                            reject(
+                                new Error(
+                                    "Unable to clear projects."
+                                )
+                            );
+
+                        };
+
+                }
+            );
+
+        },
+
+
+        /* =================================================
+           EXPORT PROJECT
+        ================================================== */
+
+        exportProject: function (
+            project
+        ) {
+
+            if (!project) {
+
+                throw new Error(
+                    "No project available for export."
+                );
+
+            }
+
+
+            return JSON.stringify(
+                project,
+                null,
+                2
+            );
+
+        },
+
+
+        /* =================================================
+           IMPORT PROJECT
+        ================================================== */
+
+        importProject: function (
+            jsonText
+        ) {
+
+            if (
+                typeof jsonText !==
+                "string"
+            ) {
+
+                throw new Error(
+                    "Invalid project file."
+                );
+
+            }
+
+
+            let parsed;
+
+
+            try {
+
+                parsed =
+                    JSON.parse(
+                        jsonText
+                    );
+
+            } catch (error) {
+
+                throw new Error(
+                    "The project file is not valid JSON."
+                );
+
+            }
+
+
+            if (
+                !window.SolarForgeProject
+            ) {
+
+                throw new Error(
+                    "SolarForgeProject is not available."
+                );
+
+            }
+
+
+            const project =
+                window.SolarForgeProject.normalize(
+                    parsed
+                );
+
 
             const validation =
-                SolarForgeProject.validate(project);
+                window.SolarForgeProject.validate(
+                    project
+                );
+
 
             if (!validation.valid) {
 
                 throw new Error(
-                    "Invalid SolarForge project file: " +
                     validation.errors.join(" ")
                 );
+
             }
-        }
 
 
-        return project;
-    },
+            return project;
+
+        },
 
 
-    // --------------------------------------------------------
-    // Create and save a new project
-    // --------------------------------------------------------
+        /* =================================================
+           CREATE PROJECT
+        ================================================== */
 
-    async createProject() {
+        createProject: async function () {
 
-        if (
-            !window.SolarForgeProject ||
-            typeof SolarForgeProject.createNewProject !==
-                "function"
-        ) {
+            if (
+                !window.SolarForgeProject
+            ) {
 
-            throw new Error(
-                "SolarForgeProject is not available. " +
-                "Make sure app/project.js is loaded first."
+                throw new Error(
+                    "SolarForgeProject is not available."
+                );
+
+            }
+
+
+            const project =
+                window.SolarForgeProject.createNewProject();
+
+
+            await this.saveProject(
+                project
             );
+
+
+            return project;
+
+        },
+
+
+        /* =================================================
+           GET LATEST PROJECT
+        ================================================== */
+
+        getLatestProject: async function () {
+
+            const projects =
+                await this.getAllProjects();
+
+
+            if (
+                !projects ||
+                projects.length === 0
+            ) {
+
+                return null;
+
+            }
+
+
+            return projects[0];
+
         }
 
-
-        const project =
-            SolarForgeProject.createNewProject();
+    };
 
 
-        await this.saveProject(project);
+    /* =====================================================
+       EXPOSE GLOBAL
+    ====================================================== */
+
+    window.SolarForgeStorage =
+        SolarForgeStorage;
 
 
-        return project;
-    },
+    window.SolarForgeStorageReady =
+        true;
 
 
-    // --------------------------------------------------------
-    // Get the most recently updated project
-    // --------------------------------------------------------
-
-    async getLatestProject() {
-
-        const projects =
-            await this.getAllProjects();
+    console.log(
+        "SolarForgeStorage loaded successfully."
+    );
 
 
-        if (
-            !projects ||
-            projects.length === 0
-        ) {
-
-            return null;
-        }
-
-
-        return projects[0];
-    }
-};
-
-
-// ============================================================
-// Global reference
-// ============================================================
-
-window.SolarForgeStorage =
-    SolarForgeStorage;
+})();
